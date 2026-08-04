@@ -29,6 +29,6 @@ Em seguida, entre no diretório do módulo desejado e siga o material correspond
 Material desenvolvido pelas equipes do LNBio/CNPEM e LNBR/CNPEM:
 
 João V. S. Guerra (@jvsguerra) — LNBio/CNPEM
-Nilson A. R. Coimbra (@nilsoncoimbra ) — LNBio/CNPEM
 Joaquim M. Junior (@jmartinsjrbr) — LNBR/CNPEM
 Monyque K. P. Silva (@monocas) — LNBR/CNPEM
+Nilson A. R. Coimbra (@nilsoncoimbra) — LNBio/CNPEM
