@@ -30,7 +30,7 @@ Material desenvolvido pelas equipes do LNBio/CNPEM e LNBR/CNPEM:
 
 - João V. S. Guerra ([@jvsguerra](https://github.com/jvsguerra)) — LNBio/CNPEM
 - Joaquim M. Junior ([@jmartinsjrbr](https://github.com/jmartinsjrbr)) — LNBR/CNPEM
-- Monyque K. P. Silva ([@monocas](https://github.com/monocas)) — LNBR/CNPEM
+- Monyque K. P. Silva ([@kpsmonyque](https://github.com/kpsmonyque)) — LNBR/CNPEM
 - Nilson A. R. Coimbra ([@nilsoncoimbra](https://github.com/nilsoncoimbra)) — LNBio/CNPEM
 
 ---
