@@ -2,7 +2,7 @@
 
 **Containers com Singularity / Apptainer para Bioinformática**
 
-Material de leitura com os conceitos da aula resumidos. Segue os mesmos oito tópicos dos slides e serve de referência para consulta. Para a parte prática (instalação, exercícios e comandos passo a passo), use o *Roteiro Teórico-Prático* que acompanha este material.
+Material de leitura com os conceitos trabalhados durante o treinamento. Para a parte prática (instalação, exercícios e comandos passo a passo), use o *Roteiro Teórico-Prático* que acompanha este material.
 
 ---
 
@@ -25,14 +25,14 @@ Material de leitura com os conceitos da aula resumidos. Segue os mesmos oito tó
 
 ### O problema
 
-Quem trabalha com dados conhece a frase *"…mas funciona na minha máquina"*. Um mesmo script pode produzir resultados diferentes — ou simplesmente não rodar — quando muda o computador. As causas são recorrentes:
+Quem trabalha com dados conhece a frase *"…mas funciona na minha máquina"*. Um mesmo script pode produzir resultados diferentes — ou simplesmente não rodar — quando se muda o ambiente ou o computador. As causas são recorrentes:
 
 - **Sistemas diferentes:** o notebook, o cluster e a máquina do revisor rodam sistemas operacionais e versões de kernel distintos.
 - **Inferno de dependências:** bibliotecas, compiladores e versões de pacotes que entram em conflito.
 - **Instalação frágil:** horas de configuração manual que quebram na próxima atualização do sistema.
 - **Ciência não reproduzível:** sem o ambiente exato, ninguém consegue repetir a análise meses ou anos depois.
 
-Em bioinformática isso é especialmente grave: pipelines encadeiam dezenas de ferramentas, cada uma com suas dependências, e um resultado só tem valor científico se puder ser reproduzido.
+Em análise de dados e, na bioinformática isso é especialmente grave: pipelines encadeiam dezenas de ferramentas, cada uma com suas dependências, e um resultado só tem valor científico se puder ser reproduzido.
 
 ### O que é um "ambiente contido"
 
@@ -342,4 +342,4 @@ Recomendações para que os seus containers sejam realmente reprodutíveis e seg
 
 ---
 
-*Esta apostila resume a teoria. Para colocar a mão na massa — instalar, baixar, construir e executar containers no seu computador — siga o Roteiro Teórico-Prático que acompanha o material.*
+*Este material resume a teoria. Para colocar a mão na massa — instalar, baixar, construir e executar containers no seu computador — siga o Roteiro Teórico-Prático que acompanha o material.*
