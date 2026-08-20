@@ -2,7 +2,7 @@
 
 **Containers com Singularity / Apptainer para Bioinformática**
 
-Material de leitura com os conceitos trabalhados durante o treinamento. Para a parte prática (instalação, exercícios e comandos passo a passo), use o *Roteiro Teórico-Prático*(#TRAD2026/blob/main/containers-module/roteiro-de-aula-pratica.md) que acompanha este material.
+Material de leitura com os conceitos trabalhados durante o treinamento. Para a parte prática (instalação, exercícios e comandos passo a passo), use o [*Roteiro Teórico-Prático*](#TRAD2026/blob/main/containers-module/roteiro-de-aula-pratica.md) que acompanha este material.
 
 ---
 
