@@ -161,6 +161,7 @@ Os arquivos utilizados nas atividades estão disponíveis no **HPC Marvin**, no 
 ```text
 /shared/training/TRAD2026/raw_data
 ```
+Informações sobre a origem, os identificadores e as características dos conjuntos podem ser consultadas na planilha de dados do TRAD2026, a qual está disponível neste diretório com o nome [TRAD2026_Datasets.xlsx](TRAD2026_Datasets.xlsx).
 
 ### Organização das pastas
 
@@ -211,7 +212,6 @@ O Marvin também pode ser acessado pelo navegador em [https://marvin.cnpem.br](h
 
 As instruções completas estão disponíveis na documentação [Primeiros passos no HPCC Marvin](https://marvindocs.cnpem.br/02-primeiros-passos/index.html#primeiros-passos). Em caso de dúvida ou problema de acesso, consulte a equipe de suporte indicada nessa página.
 
-Informações sobre a origem, os identificadores e as características dos conjuntos podem ser consultadas na planilha de dados do TRAD2026, a qual está disponível neste diretório com o nome #TRAD2026_Datasets.xlsx
 
 ---
 ## Referências e leituras complementares
