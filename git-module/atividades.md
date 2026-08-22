@@ -2,7 +2,7 @@
 
 Nesta atividade, você irá explorar os principais comandos de git, aplicando-os em um repositório local. Siga as instruções abaixo para completar a atividade.
 
-## 1.1 Configuração inicial do seu usuário
+## 1.1 Configuração inicial
 
 Antes de começar a usar o git, é importante configurar seu nome e email. Isso ajuda a identificar suas contribuições no repositório.
 
@@ -13,6 +13,18 @@ git config --global user.email "seu.email@example.com"
 
 > [!TIP]
 > Se você for colaborar em um projeto com outros desenvolvedores, é recomendável usar o mesmo nome e email que você utiliza no GitHub ou em outras plataformas de hospedagem de código.
+
+Por padrão, o git cria o branch principal com o nome `master`. No entanto, é uma boa prática utilizar o nome `main` para o branch principal. Para configurar isso, use o comando abaixo:
+
+```bash
+git config --global init.defaultBranch main
+```
+
+Para listar todas as configurações do git, utilize o comando:
+
+```bash
+git config --list
+```
 
 ## 1.2 Criando um repositório local
 
@@ -42,3 +54,11 @@ Agora, crie um arquivo chamado `README.md` dentro do diretório `projeto` e adic
 ```bash
 echo "# Meu Projeto" > README.md
 ```
+
+Para verificar o status do repositório e ver quais arquivos foram modificados, use o comando:
+
+```bash
+git status
+```
+
+Então, você verá uma mensagem indicando que o arquivo `README.md` foi criado, mas ainda não foi adicionado ao repositório.

@@ -1,0 +1,1 @@
+xelatex atividades.tex ../atividades.pdf
