@@ -18,6 +18,9 @@
 % Para identar primeiro parágrafo:
 \usepackage{indentfirst}
 
+% Para definir a identação do parágrafo:
+% \setlength{\parindent}{2cm}
+
 % Para customizar as margens:
 \usepackage[left=3.175cm,right=3.175cm,top=2.54cm,bottom=3.0cm]{geometry}
 
@@ -26,11 +29,12 @@
 \usepackage{graphicx}
 
 % Para customizar as cores:
-\usepackage{xcolor}
+\usepackage[dvipsnames]{xcolor}
 \definecolor{codebg}{RGB}{245,245,245}
 \definecolor{codeframe}{RGB}{200,200,200}
 \definecolor{trad-blue}{RGB}{31,74,145}
 \definecolor{cover-rule}{RGB}{68,114,196}
+\definecolor{green}{RGB}{0,102,0}
 
 % Para customizar os links:
 \usepackage{hyperref}
@@ -47,7 +51,7 @@
 \hypersetup{
   pdftitle     = {Módulo I: Git - Atividade prática},
   pdfauthor    = {João V. S. Guerra},
-  pdfkeywords  = {git, TRAD2026, tutorial, LNBio, LNBR, CNPEM},
+  pdfkeywords  = {Git, TRAD2026, tutorial, LNBio, LNBR, CNPEM},
   pdfproducer  = {Latex with hyperref},
   pdfcreator   = {pdflatex}
 }
@@ -70,22 +74,23 @@
 \usepackage{listings}
 \lstdefinestyle{shell}{
     backgroundcolor=\color{codebg},
-    basicstyle=\ttfamily\small,
+    basicstyle=\ttfamily\footnotesize,
     frame=single,
-    rulecolor=\color{codeframe},
+    % rulecolor=\color{codeframe},
     breaklines=true,
     breakatwhitespace=false,
     columns=fullflexible,
-    keepspaces=true,
-    xleftmargin=1em,
-    xrightmargin=1em,
-    framexleftmargin=0.8em,
-    framexrightmargin=0.8em,
-    aboveskip=8pt,
-    belowskip=8pt,
+    % framexleftmargin=0.2em,
+    % framexrightmargin=0.2em,
     showstringspaces=false,
 }
 \lstset{style=shell}
+
+% Para customizar a cor do texto dentro do lstlisting:
+\def\beginredcolor{\begingroup\color{red}}
+\def\endredcolor{\endgroup}
+\def\begingreencolor{\begingroup\color{green}}
+\def\endgreencolor{\endgroup}
 
 % Header
 \AddToShipoutPictureBG{%
@@ -186,7 +191,7 @@
 
 \clearpage
 
-\section{Comandos git na prática}
+\section{Comandos Git na prática}
 
 Nesta atividade, você irá explorar os principais comandos do Git, aplicando-os em um repositório local. Siga as instruções abaixo para completar a atividade.
 
@@ -195,15 +200,131 @@ Nesta atividade, você irá explorar os principais comandos do Git, aplicando-os
 Antes de começar a usar o Git, é importante configurar seu nome e endereço de e-mail. Essas informações serão associadas aos commits e ajudarão a identificar suas contribuições no repositório. 
 
 \begin{lstlisting}[language=bash]
-git config --global user.name "Seu Nome"
-git config --global user.email "seu.email@example.com" 
+$ git config --global user.name "Seu Nome"
+$ git config --global user.email "seu.email@example.com" 
 \end{lstlisting}
 
 \begin{question}{Dica.}
 Se você for colaborar em um projeto com outros desenvolvedores, é recomendável usar o mesmo nome e email que você utiliza no GitHub ou em outras plataformas de hospedagem de código.
 \end{question}
 
-Por padrão, o git cria o branch principal com o nome \textbf{\texttt{master}}. No entanto, é uma boa prática utilizar o nome \textbf{\texttt{main}} para o branch principal. Para configurar isso, use o comando abaixo:
+Por padrão, o Git cria o branch principal com o nome \textbf{\texttt{master}}. No entanto, é uma boa prática utilizar o nome \textbf{\texttt{main}} para o branch principal. Para configurar isso, use o comando abaixo:
 
+\begin{lstlisting}[language=bash]
+$ git config --global init.defaultBranch main
+\end{lstlisting}
+
+Para verificar se as configurações foram aplicadas corretamente, utilize o comando:
+
+\begin{lstlisting}[language=bash]
+$ git config --list
+user.name=Seu Nome
+user.email=seu.email@example.com
+init.defaultBranch=main
+\end{lstlisting}
+
+\subsection{Criando um repositório local}
+
+O próximo passo é criar um diretório para o seu projeto, use o comando abaixo para criar um novo diretório chamado \textbf{\texttt{projeto}} e navegar até ele:
+
+\begin{lstlisting}[language=bash]
+$ mkdir projeto
+$ cd projeto
+\end{lstlisting}
+
+Dentro do diretório \textbf{\texttt{projeto}}, inicialize um repositório Git com o comando:
+
+\begin{lstlisting}[language=bash]
+$ git init
+Initialized empty Git repository in /caminho/para/projeto/.git/
+\end{lstlisting}
+
+\begin{question}{Nota.}
+O comando \textbf{\texttt{git init}} inicializa um novo repositório Git, criando o subdiretório \textbf{\texttt{.git}}.
+\end{question}
+
+\subsection{Criando e adicionando arquivos}
+
+Agora, crie um arquivo chamado \textbf{\texttt{README.md}} e adicione algum conteúdo a ele. Você pode usar o comando \textbf{\texttt{echo}} para isso:
+
+\begin{lstlisting}[language=bash]
+$ echo "# Meu Projeto" > README.md
+\end{lstlisting}
+
+Para verificar o status do repositório e ver quais arquivos foram adicionados ou modificados, use o comando:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+No commits yet
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+         (*@\aftergroup\beginredcolor@*)README.md(*@\aftergroup\endredcolor@*)
+nothing added to commit but untracked files present (use "git add" to track)
+\end{lstlisting}
+
+Para adicionar o arquivo \textbf{\texttt{README.md}} ao índice (staging area), use o comando:
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+\end{lstlisting}
+
+Verifique novamente o status do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+No commits yet
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+         (*@\aftergroup\begingreencolor@*)new file:   README.md(*@\aftergroup\endgreencolor@*)
+\end{lstlisting}
+
+Agora, você pode criar um commit para salvar as alterações no repositório. Use o comando:
+
+\begin{lstlisting}[language=bash]
+$ git commit -m "Adiciona README.md"
+[main (root-commit) f89925b] Adiciona README.md
+ 1 file changed, 1 insertion(+)
+ create mode 100644 README.md
+\end{lstlisting}
+
+\begin{question}{Dica.}
+O identificador do commit (hash) é uma sequência única de caracteres que identifica um commit no repositório. No exemplo acima, o hash é \textbf{\texttt{f89925b}}. O seu será diferente, pois é gerado com base no conteúdo do commit e no momento em que ele foi criado.
+\end{question}
+
+Veja o histórico de commits com o comando:
+
+\begin{lstlisting}[language=bash]
+$ git log
+commit f89925becf2e6a17267dadb91e10c9e2391581eb (HEAD -> main)
+Author: jvsguerra <jvsguerra@gmail.com>
+Date:   Sat Aug 22 13:59:27 2026 -0300
+    Adiciona README.md
+\end{lstlisting}
+
+\subsection{Modificando arquivos e criando novos commits}
+
+Agora, vamos modificar o arquivo \textbf{\texttt{README.md}} e criar um novo commit. Adicione mais conteúdo, por exemplo:
+
+\begin{lstlisting}[language=bash]
+echo "## Descrição do Projeto" >> README.md
+echo "Este é um projeto de exemplo para praticar comandos Git." >> README.md
+\end{lstlisting}
+
+Verifique o status do repositório novamente:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+         (*@\aftergroup\beginredcolor@*)modified:   README.md(*@\aftergroup\endredcolor@*)
+\end{lstlisting}
+
+\begin{question}{Nota.}
+Note que você modificou o arquivo \textbf{\texttt{README.md}}, mas ainda não adicionou essas alterações à staging area. Caso você queira descartar essas alterações e voltar à versão anterior do arquivo, use o comando \textbf{\texttt{git restore README.md}}.
+\end{question}
 
 \end{document}
