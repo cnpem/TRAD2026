@@ -196,7 +196,7 @@
 
 \section{Comandos Git na prática}
 
-Nesta atividade, você irá explorar os principais comandos do Git e aplicá-los em um repositório local. Siga as instruções para criar arquivos, registrar alterações, consultar o histórico, desfazer commits com segurança, trabalhar com branches, resolver conflitos de merge, ignorar arquivos e configurar o Git para um repositório remoto.
+Nesta atividade, você irá explorar os principais comandos do Git e aplicá-los em um repositório local. Siga as instruções para criar arquivos, registrar alterações, consultar o histórico, desfazer commits com segurança, trabalhar com branches, resolver conflitos de merge, ignorar arquivos, configurar o Git para um repositório remoto, e sincronizar alterações com o repositório remoto.
 
 \subsection{Configuração inicial}
 
@@ -870,15 +870,23 @@ Nesta atividade, será utilizado o \href{https://github.com}{GitHub}.
 
 \subsubsection{Criando o repositório no GitHub}
 
-Acesse o GitHub e crie um novo repositório:
+Acesse o \href{https://github.com}{GitHub} e crie um novo repositório:
 
 \begin{enumerate}
-  \item clique em \textit{New repository};
+  \item clique em 
+    \href{https://github.com/new}{%
+      \raisebox{-0.25\height}{%
+        \includegraphics[width=1.4cm]{images/new-repository.png}%
+      }%
+    };
   \item informe um nome para o repositório, como \textbf{\texttt{projeto}};
   \item descreva o repositório (opcional);
   \item escolha se o repositório será público ou privado;
   \item não adicione \texttt{README.md}, \texttt{.gitignore} ou licença;
-  \item clique em \textit{Create repository}.
+  \item clique em 
+    \raisebox{-0.25\height}{%
+      \includegraphics[width=2.5cm]{images/create-repository.png}%
+    };
 \end{enumerate}
 
 \begin{question}{Atenção.}
@@ -953,20 +961,448 @@ Hi <seu-usuario>! You've successfully authenticated, but GitHub does not provide
 Caso a autenticação não esteja configurada, acesse a documentação oficial do GitHub: \url{https://docs.github.com/pt/authentication/connecting-to-github-with-ssh}.
 \end{question}
 
-% \subsubsection{Enviando uma branch de trabalho} Crie uma nova branch para atualizar a documentação: \begin{lstlisting}[language=bash] $ git switch -c atualiza-documentacao \end{lstlisting} Adicione uma nova seção ao arquivo \texttt{README.md}: \begin{lstlisting}[language=bash] $ echo "## Documentação" >> README.md $ echo "Consulte os materiais do projeto para mais informações." >> README.md \end{lstlisting} Registre a alteração: \begin{lstlisting}[language=bash] $ git add README.md $ git commit -m "Atualiza documentação do projeto" \end{lstlisting} Envie a nova branch para o repositório remoto: \begin{lstlisting}[language=bash] $ git push -u origin atualiza-documentacao \end{lstlisting} O GitHub exibirá a branch enviada e permitirá abrir um \textit{Pull Request} para propor sua integração à branch \texttt{main}.
+\subsubsection{Enviando uma branch de trabalho}
 
-% \subsubsubsection{Fazendo um Pull Request}
+Crie uma nova branch para atualizar a documentação:
 
-% \subsection{Comandos para sincronizar com o repositório remoto}
+\begin{lstlisting}[language=bash]
+$ git switch -c atualiza-documentacao
+Switched to a new branch 'atualiza-documentacao'
+\end{lstlisting}
 
-% Diferença entre \texttt{fetch}, \texttt{pull} e \texttt{push}
+Adicione uma nova seção ao arquivo \texttt{README.md}:
 
-% \begin{itemize} \item \texttt{git fetch}: baixa informações do repositório remoto sem integrar as alterações; \item \texttt{git pull}: baixa e integra as alterações remotas à branch local atual; \item \texttt{git push}: envia commits e branches locais para o repositório remoto. \end{itemize}
+\begin{lstlisting}[language=bash]
+$ echo "## Documentação" >> README.md
+$ echo "Consulte os materiais do projeto para mais informações." >> README.md
+\end{lstlisting}
 
-% \begin{lstlisting} Repositório remoto | | git fetch / git pull v Repositório local | | git push v Repositório remoto \end{lstlisting}
+Registre a alteração: 
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+$ git commit -m "Atualiza documentação do projeto"
+[atualiza-documentacao 70f24f4] Atualiza documentação do projeto
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Envie a nova branch para o repositório remoto:
+
+\begin{lstlisting}[language=bash]
+$ git push -u origin atualiza-documentacao
+Enumerating objects: 5, done.
+Counting objects: 100% (5/5), done.
+Delta compression using up to 16 threads
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (3/3), 394 bytes | 394.00 KiB/s, done.
+Total 3 (delta 1), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (1/1), completed with 1 local object.
+remote: 
+remote: Create a pull request for 'atualiza-documentacao' on GitHub by visiting
+remote:     https://github.com/seu-usuario/projeto/pull/new/atualiza-documentacao
+remote: 
+To github.com:seu-usuario/projeto.git
+ * [new branch]      atualiza-documentacao -> atualiza-documentacao
+branch 'atualiza-documentacao' set up to track 'origin/atualiza-documentacao'.
+\end{lstlisting}
+
+\begin{question}{Dica.}
+\footnotesize O GitHub exibirá a URL para abrir um \textit{Pull Request} e propor a integração da branch enviada à branch \textbf{\texttt{main}}. Copie e cole a URL no navegador para abrir o \textit{Pull Request}.
+\end{question}
+
+\subsubsection{Abrindo um Pull Request}
+
+Após enviar a branch para o repositório remoto, abra um \textit{Pull Request} para propor a integração das mudanças à branch de destino.
+
+Quando uma branch tiver sido enviada, use o link exibido no terminal, acesse a aba \textbf{\texttt{Pull requests}} do repositório no GitHub e clique em 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=2.5cm]{images/new-pull-request.png}%
+}, ou o GitHub exibirá o botão 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=3.5cm]{images/compare-pull-request-button.png}%
+}, para abrir um novo \textit{Pull Request}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/compare-pull-request.png}
+\end{figure}
+
+Na página de criação do \textit{Pull Request}, confirme as branches selecionadas:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/compare-branches-pr.png}
+\end{figure}
+
+\begin{question}{Dica.}
+\footnotesize A branch de destino (\textbf{\texttt{base:}}) é a branch que receberá as alterações, geralmente a branch \textbf{\texttt{main}}. A branch de origem (\textbf{\texttt{compare}}) é a branch que contém as alterações a serem integradas.
+\end{question}
+
+Em seguida, informe um título curto e descritivo e apresente um resumo das alterações realizadas. Quando aplicável, indique uma pessoa responsável pela revisão.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/pull-request-form.png}
+\end{figure}
+
+\begin{question}{Dica.}
+\footnotesize Antes de abrir o \textit{Pull Request}, consulte a aba \textit{Files changed} e confirme se somente as alterações esperadas estão presentes.
+\end{question}
+
+Por fim, clique em 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=3.5cm]{images/create-pull-request.png}%
+}. A contribuição ficará disponível para discussão, revisão e aprovação antes do merge.
+
+\subsubsection{Atualizando o Pull Request}
+
+Caso a revisão solicite alterações, volte à branch de trabalho:
+
+\begin{lstlisting}[language=bash]
+$ git switch atualiza-documentacao
+\end{lstlisting}
+
+Edite o arquivo, registre as correções e envie novos commits:
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+$ git commit -m "Ajusta documentação após revisão"
+$ git push
+\end{lstlisting}
+
+O \textit{Pull Request} será atualizado automaticamente com os novos commits. Não é necessário abrir outro \textit{Pull Request} para a mesma branch.
+
+\subsubsection{Integrando um Pull Request}
+
+Antes de integrar o \textit{Pull Request}, revise as alterações em \textit{Files changed}, teste as mudanças e confirme se não há conflitos.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/review-pull-request.png}
+\end{figure}
+
+Depois que as mudanças forem revisadas, o revisor deve aprovar as mudanças ou solicitar ajustes. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/approve-pull-request.png}
+\end{figure}
+
+Quando o \textit{Pull Request} estiver pronto para ser integrado, clique em
+\raisebox{-0.25\height}{%
+  \includegraphics[width=3.5cm]{images/merge-pull-request.png}%
+} e confirme a integração.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{images/successfull-pull-request.png}
+\end{figure}
+
+\begin{question}{Nota.}
+\footnotesize O GitHub oferece diferentes estratégias para integrar um \textit{Pull Request}. A opção \textit{Create a merge commit} preserva os commits da branch de origem e adiciona um commit de merge, mantendo explícito o ponto de integração no histórico. A opção \textit{Squash and merge} reúne todas as alterações do Pull Request em um único commit na branch de destino, o que pode facilitar a leitura do histórico quando existem vários commits intermediários. Por fim, a opção \textit{Rebase and merge} reaplica individualmente os commits da branch de origem sobre a branch de destino, sem criar um commit de merge, produzindo um histórico linear.
+\end{question}
+
+Após o merge, atualize a branch \textbf{\texttt{main}} local: 
+
+\begin{lstlisting}[language=bash]
+$ git switch main
+$ git pull origin main
+remote: Enumerating objects: 1, done.
+remote: Counting objects: 100% (1/1), done.
+remote: Total 1 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+Unpacking objects: 100% (1/1), 921 bytes | 921.00 KiB/s, done.
+From github.com:jvsguerra/projeto
+ * branch            main       -> FETCH_HEAD
+   d47f9e0..668bf92  main       -> origin/main
+Updating d47f9e0..668bf92
+Fast-forward
+ README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Quando a branch de trabalho não for mais necessária, remova-a localmente:
+
+\begin{lstlisting}[language=bash]
+$ git branch -d atualiza-documentacao
+Deleted branch atualiza-documentacao (was 70f24f4).
+\end{lstlisting}
+
+Para remover a branch remota pelo terminal, utilize:
+
+\begin{lstlisting}[language=bash]
+$ git push origin --delete atualiza-documentacao
+To github.com:jvsguerra/projeto.git
+ - [deleted]         atualiza-documentacao
+\end{lstlisting}
+
+\begin{question}{Dica.}
+\footnotesize A branch remota também pode ser excluída pela interface do GitHub após o merge.
+\end{question}
+
+\subsection{Sincronizando com o repositório remoto}
+
+Durante um trabalho colaborativo, o repositório remoto pode receber novos commits e branches. Por isso, é importante sincronizar o repositório local antes de iniciar uma nova tarefa. 
+
+Os principais comandos de sincronização são \textbf{\texttt{git fetch}}, \textbf{\texttt{git pull}} e \textbf{\texttt{git push}}:
+
+\begin{itemize}
+  \item \textbf{\texttt{git fetch}}: baixa informações sobre commits e branches do repositório remoto, sem alterar automaticamente os arquivos locais;
+  \item \textbf{\texttt{git pull}}: baixa e integra as alterações da branch remota à branch local atual; 
+  \item \textbf{\texttt{git push}}: envia commits e branches locais para o repositório remoto. 
+\end{itemize}
+
+O fluxo pode ser representado da seguinte forma: 
+
+\begin{center}
+  \begin{minipage}{0.62\textwidth}
+    \begin{lstlisting}
+                       git push 
+Repositorio local -----------> Repositorio remoto 
+                     <----------- 
+                   git fetch / pull
+    \end{lstlisting}
+  \end{minipage}
+\end{center}
 
 \clearpage
 
 \section{Projeto prático: usando e colaborando em um repositório remoto}
+
+Neste projeto, os participantes aplicarão os conceitos apresentados no módulo para executar uma análise de controle de qualidade e colaborar em um repositório remoto. 
+
+Os participantes serão organizados em grupos. Cada grupo deverá executar os scripts disponíveis no repositório do treinamento, interpretar os resultados e preencher um questionário em Markdown. As contribuições individuais serão integradas ao branch do grupo por meio de \textit{Pull Requests}.
+
+\subsection{Organização dos grupos}
+
+Cada grupo será associado a um branch específico no repositório do treinamento: 
+
+\begin{lstlisting}
+group1
+group2
+group3
+...
+groupX
+\end{lstlisting}
+
+\begin{question}{Atenção.}
+\footnotesize Os participantes não possuem acesso de escrita ao repositório \href{https://github.com/cnpem/TRAD2026}{\texttt{cnpem/TRAD2026}}. Portanto, cada participante deverá trabalhar em um fork pessoal e enviar sua contribuição por meio de um \textit{Pull Request}. A nomenclatura recomendada para o branch no fork do participante é: 
+\begin{lstlisting}
+groupX-nome
+\end{lstlisting}
+\end{question}
+
+\subsection{Dados utilizados no projeto}
+
+Os dados utilizados no projeto estão descritos no seguinte registro do Zenodo: \url{https://zenodo.org/records/22071921}.
+
+Consulte as orientações fornecidas pelos instrutores para identificar o conjunto de dados atribuído ao grupo e a localização dos arquivos disponibilizados para a atividade.
+
+\begin{question}{Atenção.}
+Não adicione dados brutos, arquivos de sequenciamento ou resultados grandes ao repositório Git. Esses arquivos devem permanecer no local indicado pelos instrutores e ser ignorados por meio do arquivo \textbf{\texttt{.gitignore}}.
+\end{question}
+
+\subsection{Criando um fork do repositório}
+
+Acesse o repositório do treinamento no GitHub: \url{https://github.com/cnpem/TRAD2026}. Clique em 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=2.5cm]{images/fork-repository.png}%
+}
+ e crie uma cópia do repositório em sua conta pessoal. 
+ 
+Depois da criação, o fork estará disponível em um endereço semelhante a:
+
+\texttt{\textcolor{blue}{https://github.com/seu-usuario/TRAD2026}}. 
+
+\begin{question}{Nota.}
+Um fork é uma cópia de um repositório criada na conta do participante. As alterações realizadas no fork não modificam diretamente o repositório original da organização.
+\end{question}
+
+\subsection{Clonando o fork pessoal}
+
+Clone o fork criado em sua conta:
+
+\begin{lstlisting}[language=bash]
+$ git clone git@github.com:seu-usuario/TRAD2026.git
+$ cd TRAD2026
+\end{lstlisting}
+
+O Git configura automaticamente o fork pessoal como o repositório remoto \texttt{origin}. Confirme a configuração: 
+
+\begin{lstlisting}[language=bash]
+$ git remote -v
+(fetch) origin git@github.com:seu-usuario/TRAD2026.git
+(push) origin git@github.com:seu-usuario/TRAD2026.git
+\end{lstlisting}
+
+Agora, crie sua branch individual:
+
+\begin{lstlisting}[language=bash]
+$ git switch -c groupX-seu-usuario
+\end{lstlisting} 
+
+\subsection{Colaborando com o grupo}
+
+Os scripts da atividade estão disponíveis no diretório: \textbf{\texttt{TRAD2026/git-module/scripts/}}
+
+Acesse o diretório:
+
+\begin{lstlisting}[language=bash]
+$ cd git-module/scripts
+$ ls 
+\end{lstlisting}
+
+Antes de executar um script, consulte suas instruções em \textbf{\texttt{INSTRUCTIONS.md}}.
+
+\begin{lstlisting}[language=bash]
+$ cat INSTRUCTIONS.md
+\end{lstlisting}
+
+Siga as orientações para identificar os arquivos de entrada, os parâmetros necessários e os resultados esperados.
+
+Após a execução dos scripts, analise os resultados do controle de qualidade e divida as questões do questionário entre os integrantes do grupo. Cada participante deverá preencher as informações solicitadas no cabeçalho e responder a questão atribuída no arquivo {\texttt{QUESTIONARIO.md}}, disponível no diretório \textbf{\texttt{TRAD2026/git-module/}}.
+
+Retorne ao diretório do módulo e abra o questionário em um editor:
+
+\begin{lstlisting}[language=bash]
+$ cd ..
+$ notepad QUESTIONARIO.md # Windows
+$ nano QUESTIONARIO.md    # Linux
+\end{lstlisting}
+
+\begin{question}{Dica.}
+Edite somente as informações do cabeçalho solicitadas e a questão atribuída a você. Não modifique as respostas sob responsabilidade dos demais integrantes.
+\end{question}
+
+Após preencher o questionário, revise as alterações:
+
+\begin{lstlisting}[language=bash]
+$ git status
+$ git diff QUESTIONARIO.md
+\end{lstlisting}
+
+Confirme que somente as alterações esperadas estão presentes. Em seguida, registre a contribuição na branch individual:
+
+\begin{lstlisting}[language=bash]
+$ git add QUESTIONARIO.md
+$ git commit -m "Responde pergunta N do questionário"
+\end{lstlisting}
+
+Envie a branch individual para o fork pessoal:
+
+\begin{lstlisting}[language=bash]
+$ git push -u origin groupX-seu-usuario
+\end{lstlisting}
+
+\subsubsection{Abrindo o Pull Request}
+
+Agora, abra um \textit{Pull Request} para propor a integração da sua contribuição à branch do grupo.
+
+Acesse a aba \textit{Pull Requests} do repositório \href{https://github.com/cnpem/TRAD2026}{\texttt{cnpem/TRAD2026}} e clique em 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=2.5cm]{images/new-pull-request.png}
+}.
+
+Na página de criação do \textit{Pull Request}, branches de forks podem não aparecer inicialmente entre as opções. Nesse caso, clique em \textit{compare across forks} para exibir os repositórios disponíveis.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/compare-across-forks.png}
+\end{figure}
+
+Selecione o seu fork como branch de origem (\textbf{\texttt{seu-usuario:groupX-seu-usuario}}) e a branch do grupo como branch de destino (\textbf{\texttt{cnpem:groupX}}). Então, clique em 
+\raisebox{-0.25\height}{%
+  \includegraphics[width=3.5cm]{images/create-pull-request.png}%
+}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/pull-request-projeto.png}
+\end{figure}
+
+Informe um título que identifique claramente a contribuição. Por exemplo: 
+
+\begin{lstlisting}
+Responde pergunta 2 do questionario de QC
+\end{lstlisting} 
+
+Na descrição do \textit{Pull Request}, informe o conjunto de dados analisado e a questão respondida. Então, clique em
+\raisebox{-0.25\height}{%
+  \includegraphics[width=3.5cm]{images/create-pull-request.png}%
+} para abrir o \textit{Pull Request}.
+
+\subsubsection{Revisando as contribuições}
+
+Cada Pull Request deverá ser revisado por pelo menos outro integrante do grupo. 
+
+Como o repositório é público, os participantes podem visualizar as mudanças, comentar linhas específicas, sugerir correções e registrar uma revisão.
+
+Durante a revisão:
+
+\begin{itemize}
+  \item confira se a resposta corresponde à questão atribuída;
+  \item verifique se a interpretação está de acordo com os resultados;
+  \item revise a clareza e a formatação do texto;
+  \item confirme que nenhum dado bruto ou resultado grande foi incluído;
+  \item faça comentários ou sugira alterações quando necessário;
+  \item registre a revisão quando a contribuição estiver adequada.
+\end{itemize}
+
+Caso sejam solicitadas alterações, o autor deverá modificar o arquivo na mesma branch, criar um novo commit e enviar as correções:
+
+\begin{lstlisting}[language=bash]
+$ git add QUESTIONARIO.md
+$ git commit -m "Ajusta resposta apos revisao"
+$ git push
+\end{lstlisting} 
+  
+O \textit{Pull Request} será atualizado automaticamente.
+
+\begin{question}{Atenção.}
+\footnotesize Os participantes podem revisar e comentar \textit{Pull Requests}, mas não possuem permissão para integrar alterações ao repositório \texttt{cnpem/TRAD2026}. O merge será realizado por um instrutor ou monitor com permissão de escrita.
+\end{question}
+
+\begin{question}{Dica.}
+\footnotesize 
+As contribuições devem ser integradas à branch do grupo uma por vez.
+
+Para acompanhar as atualizações do repositório institucional, configure o repositório \texttt{cnpem/TRAD2026} como remoto \textbf{\texttt{upstream}}.
+
+Essa configuração precisa ser realizada apenas uma vez, após clonar o fork pessoal:
+
+\begin{lstlisting}[language=bash]
+$ git remote add upstream git@github.com:cnpem/TRAD2026.git
+\end{lstlisting}
+
+Verifique os repositórios remotos configurados:
+
+\begin{lstlisting}[language=bash]
+$ git remote -v 
+(fetch) origin git@github.com:seu-usuario/TRAD2026.git
+(push) origin git@github.com:seu-usuario/TRAD2026.git
+(fetch) upstream git@github.com:cnpem/TRAD2026.git
+(push) upstream git@github.com:cnpem/TRAD2026.git 
+\end{lstlisting}
+
+Nesse fluxo, \textbf{\texttt{origin}} representa o fork pessoal, para o qual o participante possui permissão de escrita, enquanto \textbf{\texttt{upstream}} representa o repositório institucional, utilizado como fonte das atualizações oficiais.
+
+Depois de cada merge realizado na branch \texttt{groupX}, atualize as referências do repositório institucional:
+
+\begin{lstlisting}[language=bash]
+$ git fetch upstream
+\end{lstlisting}
+
+Caso a atualização gere conflitos, revise o arquivo \texttt{QUESTIONARIO.md}, preserve as respostas já integradas e resolva os conflitos antes de continuar.
+
+Depois da resolução, registre e envie as alterações para a branch no fork pessoal:
+
+\begin{lstlisting}[language=bash]
+$ git add QUESTIONARIO.md
+$ git commit -m "Atualiza questionario com contribuicoes do grupo"
+$ git push
+\end{lstlisting}
+
+O \textit{Pull Request} será atualizado automaticamente. Esse processo reduz a ocorrência de conflitos e garante que cada contribuição seja integrada sobre a versão mais recente da branch \texttt{groupX}.
+\textit{Pull Request}.
+\end{question}
 
 \end{document}

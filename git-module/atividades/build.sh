@@ -1,1 +1,2 @@
-xelatex atividades.tex ../atividades.pdf
+xelatex atividades.tex
+mv atividades.pdf ../atividades.pdf
