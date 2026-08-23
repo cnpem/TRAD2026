@@ -1385,10 +1385,12 @@ $ git remote -v
 
 Nesse fluxo, \textbf{\texttt{origin}} representa o fork pessoal, para o qual o participante possui permissão de escrita, enquanto \textbf{\texttt{upstream}} representa o repositório institucional, utilizado como fonte das atualizações oficiais.
 
-Depois de cada merge realizado na branch \texttt{groupX}, atualize as referências do repositório institucional:
+Depois de cada merge realizado na branch \texttt{groupX}, atualize as referências do repositório institucional e integre as alterações à sua branch individual:
 
 \begin{lstlisting}[language=bash]
 $ git fetch upstream
+$ git switch groupX-seu-usuario
+$ git merge upstream/groupX
 \end{lstlisting}
 
 Caso a atualização gere conflitos, revise o arquivo \texttt{QUESTIONARIO.md}, preserve as respostas já integradas e resolva os conflitos antes de continuar.
