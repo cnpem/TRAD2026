@@ -2,6 +2,8 @@
 
 % ---------- Pacotes ----------
 % Fontes
+\usepackage[brazilian]{babel}
+\usepackage[T1]{fontenc}
 \usepackage{fontspec}
 \setmainfont{Aptos.ttf}[
     BoldFont = Aptos-Bold.ttf,
@@ -114,7 +116,7 @@
     colframe=trad-blue,
     colback=cover-rule!10,
     attach boxed title to top left={yshift*=-\tcboxedtitleheight}, 
-    title=\texttt{#1},        % use the argument as the title
+    title=\small\texttt{#1},        % use the argument as the title
     boxed title size=title,
     boxed title style={%
         rounded corners=northeast, 
@@ -133,6 +135,7 @@
 
 % Para customizar o sumário:
 \renewcommand{\contentsname}{\centering Sumário}
+\setcounter{tocdepth}{2}
 
 % Para colocar o número da página dentro do círculo azul no rodapé:
 \usepackage{tikz}
@@ -193,11 +196,11 @@
 
 \section{Comandos Git na prática}
 
-Nesta atividade, você irá explorar os principais comandos do Git, aplicando-os em um repositório local. Siga as instruções abaixo para completar a atividade.
+Nesta atividade, você irá explorar os principais comandos do Git e aplicá-los em um repositório local. Siga as instruções para criar arquivos, registrar alterações, consultar o histórico, desfazer commits com segurança, trabalhar com branches, resolver conflitos de merge, ignorar arquivos e configurar o Git para um repositório remoto.
 
 \subsection{Configuração inicial}
 
-Antes de começar a usar o Git, é importante configurar seu nome e endereço de e-mail. Essas informações serão associadas aos commits e ajudarão a identificar suas contribuições no repositório. 
+Antes de começar a usar o Git, configure seu nome e endereço de e-mail. Essas informações serão associadas aos commits e permitirão identificar suas contribuições no histórico do repositório.
 
 \begin{lstlisting}[language=bash]
 $ git config --global user.name "Seu Nome"
@@ -205,16 +208,16 @@ $ git config --global user.email "seu.email@example.com"
 \end{lstlisting}
 
 \begin{question}{Dica.}
-Se você for colaborar em um projeto com outros desenvolvedores, é recomendável usar o mesmo nome e email que você utiliza no GitHub ou em outras plataformas de hospedagem de código.
+\footnotesize Ao colaborar com outras pessoas, use o mesmo endereço de e-mail associado à sua conta no GitHub ou em outra plataforma de hospedagem de repositórios. Isso permite que seus commits sejam corretamente vinculados ao seu perfil.
 \end{question}
 
-Por padrão, o Git cria o branch principal com o nome \textbf{\texttt{master}}. No entanto, é uma boa prática utilizar o nome \textbf{\texttt{main}} para o branch principal. Para configurar isso, use o comando abaixo:
+Algumas instalações do Git usam \textbf{\texttt{master}} como nome padrão da branch principal. Para definir \textbf{\texttt{main}} como nome padrão em novos repositórios, execute:
 
 \begin{lstlisting}[language=bash]
 $ git config --global init.defaultBranch main
 \end{lstlisting}
 
-Para verificar se as configurações foram aplicadas corretamente, utilize o comando:
+Para listar as configurações do Git, utilize:
 
 \begin{lstlisting}[language=bash]
 $ git config --list
@@ -223,16 +226,20 @@ user.email=seu.email@example.com
 init.defaultBranch=main
 \end{lstlisting}
 
+\begin{question}{Dica.}
+\footnotesize O comando \texttt{git config --list} pode apresentar outras configurações do sistema e do usuário. Para consultar apenas uma configuração específica, use, por exemplo, \texttt{git config --global user.name}.
+\end{question}
+
 \subsection{Criando um repositório local}
 
-O próximo passo é criar um diretório para o seu projeto, use o comando abaixo para criar um novo diretório chamado \textbf{\texttt{projeto}} e navegar até ele:
+O próximo passo é criar um diretório para o seu projeto. Crie um diretório chamado \textbf{\texttt{projeto}} e navegue até ele:
 
 \begin{lstlisting}[language=bash]
 $ mkdir projeto
 $ cd projeto
 \end{lstlisting}
 
-Dentro do diretório \textbf{\texttt{projeto}}, inicialize um repositório Git com o comando:
+Dentro do diretório \textbf{\texttt{projeto}}, inicie um repositório Git:
 
 \begin{lstlisting}[language=bash]
 $ git init
@@ -240,18 +247,22 @@ Initialized empty Git repository in /caminho/para/projeto/.git/
 \end{lstlisting}
 
 \begin{question}{Nota.}
-O comando \textbf{\texttt{git init}} inicializa um novo repositório Git, criando o subdiretório \textbf{\texttt{.git}}.
+\footnotesize O comando \textbf{\texttt{git init}} inicializa um repositório Git e cria o subdiretório oculto \textbf{\texttt{.git}}. Esse subdiretório armazena o histórico, as referências, as configurações locais e outros metadados do repositório.
 \end{question}
 
 \subsection{Criando e adicionando arquivos}
 
-Agora, crie um arquivo chamado \textbf{\texttt{README.md}} e adicione algum conteúdo a ele. Você pode usar o comando \textbf{\texttt{echo}} para isso:
+Agora, crie um arquivo chamado \textbf{\texttt{README.md}} e adicione um título:
 
 \begin{lstlisting}[language=bash]
 $ echo "# Meu Projeto" > README.md
 \end{lstlisting}
 
-Para verificar o status do repositório e ver quais arquivos foram adicionados ou modificados, use o comando:
+\begin{question}{Nota.}
+\footnotesize O operador \texttt{>} cria o arquivo \textbf{\texttt{README.md}} e adiciona o conteúdo "\# Meu Projeto". Se o arquivo já existir, ele será sobrescrito.
+\end{question}
+
+Para verificar o estado do repositório e ver quais arquivos foram adicionados ou modificados, use o comando:
 
 \begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
 $ git status
@@ -263,13 +274,15 @@ Untracked files:
 nothing added to commit but untracked files present (use "git add" to track)
 \end{lstlisting}
 
-Para adicionar o arquivo \textbf{\texttt{README.md}} ao índice (staging area), use o comando:
+O arquivo \textbf{\texttt{README.md}} aparece como \textit{untracked}, pois ainda não está sendo rastreado pelo Git.
+
+Para adicionar o arquivo \textbf{\texttt{README.md}} ao índice (\textit{staging area}), use o comando:
 
 \begin{lstlisting}[language=bash]
 $ git add README.md
 \end{lstlisting}
 
-Verifique novamente o status do repositório:
+Verifique novamente o estado do repositório:
 
 \begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
 $ git status
@@ -280,7 +293,9 @@ Changes to be committed:
          (*@\aftergroup\begingreencolor@*)new file:   README.md(*@\aftergroup\endgreencolor@*)
 \end{lstlisting}
 
-Agora, você pode criar um commit para salvar as alterações no repositório. Use o comando:
+O arquivo está agora no estado \textit{staged} e será incluído no próximo commit.
+
+Agora, você pode criar o primeiro commit para registrar as alterações no repositório. Use o comando:
 
 \begin{lstlisting}[language=bash]
 $ git commit -m "Adiciona README.md"
@@ -289,11 +304,11 @@ $ git commit -m "Adiciona README.md"
  create mode 100644 README.md
 \end{lstlisting}
 
-\begin{question}{Dica.}
-O identificador do commit (hash) é uma sequência única de caracteres que identifica um commit no repositório. No exemplo acima, o hash é \textbf{\texttt{f89925b}}. O seu será diferente, pois é gerado com base no conteúdo do commit e no momento em que ele foi criado.
+\begin{question}{Nota.}
+\footnotesize Cada commit possui um identificador único, chamado \textit{hash}. No exemplo, o identificador abreviado é \textbf{\texttt{f89925b}}. O identificador produzido em seu repositório será diferente.
 \end{question}
 
-Veja o histórico de commits com o comando:
+Consulte o histórico de commits:
 
 \begin{lstlisting}[language=bash]
 $ git log
@@ -303,16 +318,27 @@ Date:   Sat Aug 22 13:59:27 2026 -0300
     Adiciona README.md
 \end{lstlisting}
 
+Para visualizar uma versão resumida do histórico, utilize:
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline
+f89925b (HEAD -> main) Adiciona README.md
+\end{lstlisting}
+
 \subsection{Modificando arquivos e criando novos commits}
 
-Agora, vamos modificar o arquivo \textbf{\texttt{README.md}} e criar um novo commit. Adicione mais conteúdo, por exemplo:
+Agora, vamos modificar o arquivo \textbf{\texttt{README.md}} e criar um novo commit. Adicione uma descrição ao arquivo \textbf{\texttt{README.md}}:
 
 \begin{lstlisting}[language=bash]
 echo "## Descrição do Projeto" >> README.md
 echo "Este é um projeto de exemplo para praticar comandos Git." >> README.md
 \end{lstlisting}
 
-Verifique o status do repositório novamente:
+\begin{question}{Nota.}
+\footnotesize O operador \texttt{>>} adiciona conteúdo ao final do arquivo sem substituir o conteúdo existente.
+\end{question}
+
+Verifique o estado do repositório novamente:
 
 \begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
 $ git status
@@ -324,7 +350,623 @@ Changes not staged for commit:
 \end{lstlisting}
 
 \begin{question}{Nota.}
-Note que você modificou o arquivo \textbf{\texttt{README.md}}, mas ainda não adicionou essas alterações à staging area. Caso você queira descartar essas alterações e voltar à versão anterior do arquivo, use o comando \textbf{\texttt{git restore README.md}}.
+\footnotesize O arquivo \textbf{\texttt{README.md}} foi modificado, mas as alterações ainda não foram adicionadas à \textit{staging area}. Para descartar as mudanças e restaurar a última versão registrada, use \textbf{\texttt{git restore README.md}}.
 \end{question}
+
+Consulte as diferenças entre o arquivo atual e a última versão registrada:
+
+\begin{lstlisting}[language=bash]
+$ git diff README.md
+diff --git a/README.md b/README.md
+index 160ca7d..08681e8 100644
+--- a/README.md
++++ b/README.md
+@@ -1 +1,3 @@
+ # Meu Projeto
++## Descrição do Projeto
++Este é um projeto de exemplo para praticar comandos Git.
+\end{lstlisting}
+
+Como o arquivo já está sendo rastreado pelo Git, é possível usar a opção \textbf{\texttt{-a}} para adicionar suas modificações à \textit{staging area} e criar o commit em um único comando:
+
+Como foram feitas alterações em um arquivo já existente e rastreado pelo Git,
+podemos usar a opção \textbf{\texttt{-am}} para adicionar as alterações à staging
+area e criar o commit em um único comando:
+
+\begin{lstlisting}[language=bash]
+$ git commit -am "Adiciona descrição do projeto"
+[main 87a7e21] Adiciona descrição do projeto
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+\begin{question}{Atenção.}
+\footnotesize A opção \textbf{\texttt{-a}} inclui apenas arquivos modificados ou removidos que já estejam sendo rastreados. Arquivos novos ainda precisam ser adicionados com \textbf{\texttt{git add}}.
+\end{question}
+
+\subsection{Desfazendo commits com \texttt{git reset}}
+
+Aqui, será criado um commit que depois será desfeito. Adicione uma nova seção ao arquivo:
+
+\begin{lstlisting}[language=bash]
+$ echo "## Funcionalidades" >> README.md
+$ echo "Este projeto possui as seguintes funcionalidades:" >> README.md
+$ git commit -am "Adiciona funcionalidades do projeto"
+[main d355673] Adiciona funcionalidades do projeto
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Consulte o histórico resumido:
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline
+d355673 (HEAD -> main) Adiciona funcionalidades do projeto
+87a7e21 Adiciona descrição do projeto
+f89925b Adiciona README.md
+\end{lstlisting}
+
+O comando \textbf{\texttt{git reset}} move o ponteiro da branch para outro commit. O destino \texttt{HEAD\textasciitilde1} representa o commit imediatamente anterior ao commit atual.
+
+\subsubsection{\texttt{git reset --soft}}
+
+A opção \textbf{\texttt{--soft}} desfaz o commit, mas mantém as alterações na \textit{staging area}:
+
+\begin{lstlisting}[language=bash]
+$ git reset --soft HEAD~1
+\end{lstlisting}
+
+Verifique o estado do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+         (*@\aftergroup\begingreencolor@*)modified:   README.md(*@\aftergroup\endgreencolor@*)
+\end{lstlisting}
+
+As alterações podem ser registradas novamente:
+
+\begin{lstlisting}[language=bash]
+$ git commit -m "Adiciona funcionalidades do projeto"
+[main 58c06a3] Adiciona funcionalidades do projeto
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+\subsubsection{\texttt{git reset --mixed}}
+
+A opção \textbf{\texttt{--mixed}}, que é o modo padrão do comando, desfaz o commit e remove as alterações da \textit{staging area}. As mudanças permanecem no \textit{working directory}:
+
+\begin{lstlisting}[language=bash]
+$ git reset --mixed HEAD~1
+Unstaged changes after reset:
+M       README.md
+\end{lstlisting}
+
+\begin{question}{Atenção.}
+\footnotesize O mesmo resultado pode ser obtido omitindo a opção \textbf{\texttt{--mixed}}, pois ela é o modo padrão do comando \textbf{\texttt{git reset}}.
+\end{question}
+
+Verifique o estado do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+         (*@\aftergroup\beginredcolor@*)modified:   README.md(*@\aftergroup\endredcolor@*)
+\end{lstlisting}
+
+Registre novamente as alterações:
+
+\begin{lstlisting}[language=bash]
+$ git commit -am "Adiciona funcionalidades do projeto"
+[main be1402b] Adiciona funcionalidades do projeto
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+\subsubsection{\texttt{git reset --hard}}
+
+A opção \textbf{\texttt{--hard}} desfaz o commit e também descarta as alterações correspondentes do \textit{working directory} e da \textit{staging area}:
+
+\begin{lstlisting}[language=bash]
+$ git reset --hard HEAD~1
+HEAD is now at 87a7e21 Adiciona descrição do projeto
+\end{lstlisting}
+
+\begin{question}{Atenção}
+\footnotesize Use \textbf{\texttt{git reset --hard}} somente quando tiver certeza de que as alterações podem ser descartadas. Esse comando pode provocar perda de trabalho não salvo em outro commit ou arquivo.
+
+Para desfazer um commit que já foi enviado a um repositório compartilhado, prefira \textbf{\texttt{git revert}}. Esse comando cria um novo commit que desfaz as alterações anteriores sem reescrever o histórico existente.
+\end{question}
+
+Verifique o estado do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)},language=bash]
+$ git status
+On branch main
+nothing to commit, working tree clean
+\end{lstlisting}
+
+Consulte novamente o histórico:
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline
+87a7e21 Adiciona descrição do projeto
+f89925b Adiciona README.md
+\end{lstlisting}
+
+\subsection{Trabalhando em paralelo com branches}
+
+Branches permitem desenvolver funcionalidades, correções ou atualizações de forma isolada, sem modificar diretamente a versão principal do projeto. Neste exemplo, a branch \textbf{\texttt{main}} continuará estável enquanto uma nova seção será adicionada ao arquivo \textbf{\texttt{README.md}} em uma branch separada.
+
+Antes de começar, verifique a branch atual e o estado do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git branch
+* (*@\aftergroup\begingreencolor@*)main(*@\aftergroup\endgreencolor@*)
+
+$ git status
+On branch main nothing to commit, working tree clean
+\end{lstlisting}
+
+O asterisco indica a branch atualmente selecionada. 
+
+Crie uma branch chamada \texttt{adiciona-instalacao} e alterne para ela:
+
+\begin{lstlisting}[language=bash]
+$ git switch -c adiciona-instalacao
+Switched to a new branch 'adiciona-instalacao'
+\end{lstlisting}
+
+\begin{question}{Nota.}
+\footnotesize A opção \textbf{\texttt{-c}} cria uma nova branch e alterna imediatamente para ela. 
+O comando é equivalente a executar \textbf{\texttt{git branch adiciona-instalacao}} seguido de \textbf{\texttt{git switch adiciona-instalacao}}.
+\end{question}
+
+Confirme a branch atual: 
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git branch
+* (*@\aftergroup\begingreencolor@*)adiciona-instalacao(*@\aftergroup\endgreencolor@*)
+  main
+\end{lstlisting}
+
+Adicione uma seção de instalação ao arquivo \textbf{\texttt{README.md}}: 
+
+\begin{lstlisting}[language=bash] 
+$ echo "## Instalação" >> README.md
+$ echo "Consulte a documentação para instalar o projeto." >> README.md 
+\end{lstlisting}
+
+Verifique as alterações: 
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git diff README.md
+diff --git a/README.md b/README.md
+index 08681e8..8877175 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,5 @@
+ # Meu Projeto
+ ## Descrição do Projeto
+ Este é um projeto de exemplo para praticar comandos Git.
+(*@\aftergroup\begingreencolor@*)+## Instalação(*@\aftergroup\endgreencolor@*)
+(*@\aftergroup\begingreencolor@*)+Consulte a documentação para instalar o projeto.(*@\aftergroup\endgreencolor@*)
+\end{lstlisting} 
+
+Registre as alterações em um novo commit:
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+$ git commit -m "Adiciona instruções de instalação" 
+[adiciona-instalacao 34c5532] Adiciona instruções de instalação
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Visualize o histórico e as branches:
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline --graph --decorate
+* 34c5532 (HEAD -> adiciona-instalacao) Adiciona instruções de instalação
+* 87a7e21 (main) Adiciona descrição do projeto
+* f89925b Adiciona README.md
+\end{lstlisting}
+
+\begin{question}{Dica.}
+\footnotesize O comando \textbf{\texttt{git log --oneline --graph --decorate}} pode ser salvo com um alias para facilitar o uso com o comando:
+\begin{lstlisting}[language=bash]
+$ git config --global alias.graph "log --oneline --graph --decorate"
+\end{lstlisting}
+Depois, basta digitar \textbf{\texttt{git graph}} para visualizar o histórico de forma resumida e gráfica.
+\end{question}
+
+A branch \textbf{\texttt{adiciona-instalacao}} possui agora um commit que ainda não faz parte da \textbf{\texttt{main}}.
+
+\subsubsection{Integrando uma branch com merge}
+
+Após concluir e revisar a alteração, volte para a branch \textbf{\texttt{main}}:
+
+\begin{lstlisting}[language=bash]
+$ git switch main
+Switched to branch 'main'
+\end{lstlisting}
+
+Agora, integre a branch \textbf{\texttt{adiciona-instalacao}} à \textbf{\texttt{main}}:
+
+\begin{lstlisting}[language=bash]
+$ git merge adiciona-instalacao
+Updating 87a7e21..34c5532
+Fast-forward
+ README.md | 2 ++
+ 1 file changed, 2 insertions(+)
+\end{lstlisting}
+
+Nesse caso, o Git realizou um \textit{fast-forward merge}. Como a branch \textbf{\texttt{main}} não recebeu novos commits após a criação da branch de trabalho, o Git apenas avançou seu ponteiro até o commit mais recente.
+
+Verifique o histórico:
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline --graph --all --decorate
+* 34c5532 (HEAD -> main, adiciona-instalacao) Adiciona instruções de instalação
+* 87a7e21 Adiciona descrição do projeto
+* f89925b Adiciona README.md
+\end{lstlisting}
+
+Depois de confirmar que a integração foi concluída, remova a branch de trabalho: 
+
+\begin{lstlisting}[language=bash]
+$ git branch -d adiciona-instalacao
+Deleted branch adiciona-instalacao.
+\end{lstlisting}
+
+\begin{question}{Dica.}
+\footnotesize Remova uma branch somente depois de verificar que suas alterações foram integradas corretamente. A opção \textbf{\texttt{-d}} impede a remoção de uma branch que   ainda possui commits não integrados.
+\end{question}
+
+\subsection{Identificando e resolvendo conflitos de merge}
+
+Um conflito de merge pode ocorrer quando branches diferentes modificam a mesma parte de um arquivo. Nesse caso, o Git não consegue decidir automaticamente qual conteúdo deve ser mantido e solicita uma revisão manual. 
+
+Nesta atividade, serão criadas duas versões diferentes para a mesma linha do arquivo \texttt{README.md}.
+
+\subsubsection{Criando uma alteração na branch de trabalho}
+
+A partir da \textbf{\texttt{main}}, crie uma branch chamada \textbf{\texttt{atualiza-descricao}}: 
+
+\begin{lstlisting}[language=bash]
+$ git switch -c atualiza-descricao
+Switched to a new branch 'atualiza-descricao'
+\end{lstlisting}
+
+Abra o arquivo \textbf{\texttt{README.md}} em um editor e altere a linha:
+
+\begin{lstlisting}
+Este é um projeto de exemplo para praticar comandos Git.
+\end{lstlisting}
+
+para:
+
+\begin{lstlisting}
+Este projeto apresenta uma introdução prática ao Git.
+\end{lstlisting}
+
+Registre a alteração:
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+$ git commit -m "Atualiza descrição do projeto"
+[atualiza-descricao 5d7ce19] Atualiza descrição do projeto
+1 file changed, 1 insertion(+), 1 deletion(-)
+\end{lstlisting}
+
+\subsubsection{Criando uma alteração concorrente na main}
+
+Volte para a branch \textbf{\texttt{main}}:
+
+\begin{lstlisting}[language=bash]
+$ git switch main
+Switched to branch 'main'
+\end{lstlisting}
+
+No arquivo \textbf{\texttt{README.md}}, altere a mesma linha para um conteúdo diferente:
+
+\begin{lstlisting}
+Este projeto contém exemplos de comandos para controle de versão.
+\end{lstlisting}
+
+Registre a alteração na \texttt{main}:
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+$ git commit -m "Reformula descrição do projeto" 
+[main 6e43a9a] Reformula descrição do projeto
+1 file changed, 1 insertion(+), 1 deletion(-)
+\end{lstlisting}
+
+As branches possuem agora alterações diferentes na mesma linha do arquivo.
+
+\subsubsection{Provocando o conflito}
+
+Tente integrar a branch \textbf{\texttt{atualiza-descricao}} à \textbf{\texttt{main}}: 
+
+\begin{lstlisting}[language=bash]
+$ git merge atualiza-descricao
+Auto-merging README.md CONFLICT (content): Merge conflict in README.md
+Automatic merge failed; fix conflicts and then commit the result.
+\end{lstlisting}
+
+Verifique o estado do repositório: 
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git status
+On branch main
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        (*@\aftergroup\beginredcolor@*)both modified:   README.md(*@\aftergroup\endredcolor@*)
+
+no changes added to commit (use "git add" and/or "git commit -a")
+\end{lstlisting}
+
+O arquivo \textbf{\texttt{README.md}} apresentará marcadores semelhantes aos seguintes: 
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git diff README.md
+diff --cc README.md
+index 57c7db0,2b5d4f2..0000000
+--- a/README.md
++++ b/README.md
+@@@ -1,5 -1,5 +1,9 @@@
+  # Meu Projeto
+  ## Descrição do Projeto
+(*@\aftergroup\begingreencolor@*)++<<<<<<< HEAD
+ +Este projeto contém exemplos de comandos para controle de versão.
+++=======
++ Este projeto apresenta uma introdução prática ao Git.
+++>>>>>>> atualiza-descricao(*@\aftergroup\endgreencolor@*)
+  ## Instalação
+  Consulte a documentação para instalar o projeto.
+\end{lstlisting}
+
+\begin{question}{Atenção.}
+\footnotesize O Git não consegue decidir qual versão deve ser mantida, pois ambas as branches modificaram a mesma linha do arquivo. É necessário revisar o conteúdo e escolher a versão desejada ou combinar as alterações. O arquivo não pode ser registrado até que o conflito seja resolvido.
+  \begin{itemize}
+    \item \texttt{<<<<<<< HEAD}: início da versão presente na branch atual, neste caso, \texttt{main}; 
+    \item \texttt{=======}: separação entre as duas versões; 
+    \item \texttt{>>>>>>> atualiza-descricao}: fim da versão proveniente da outra branch. 
+  \end{itemize} 
+\end{question}
+
+\subsubsection{Resolvendo o conflito} 
+
+Abra o arquivo \textbf{\texttt{README.md}} em um editor, escolha o conteúdo desejado ou combine as duas versões. Por exemplo: 
+
+\begin{lstlisting} 
+Este projeto apresenta exemplos práticos de Git e controle de versão. 
+\end{lstlisting}
+
+Remova todos os marcadores de conflito e salve o arquivo. Em seguida, revise a diferença resultante:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ git diff README.md
+diff --cc README.md
+index 57c7db0,2b5d4f2..0000000
+--- a/README.md
++++ b/README.md
+@@@ -1,5 -1,5 +1,9 @@@
+  # Meu Projeto
+  ## Descrição do Projeto
+(*@\aftergroup\beginredcolor@*)- Este projeto contém exemplos de comandos para controle de versão.
+ -Este projeto apresenta uma introdução prática ao Git.(*@\aftergroup\endredcolor@*)
+(*@\aftergroup\begingreencolor@*)++Este projeto apresenta exemplos práticos de Git e controle de versão.(*@\aftergroup\endgreencolor@*)
+  ## Instalação
+  Consulte a documentação para instalar o projeto.
+\end{lstlisting}
+
+Marque o conflito como resolvido: 
+
+\begin{lstlisting}[language=bash]
+$ git add README.md
+\end{lstlisting}
+
+Finalize o merge com um commit:
+
+\begin{lstlisting}[language=bash]
+$ git commit -m "Resolve conflito na descrição do projeto"
+[main 03d100b] Resolve conflito na descrição do projeto
+\end{lstlisting}
+
+Verifique o histórico completo: 
+
+\begin{lstlisting}[language=bash]
+$ git log --oneline --graph --all --decorate
+*   03d100b (HEAD -> main) Resolve conflito na descrição do projeto
+|\  
+| * 5d7ce19 (atualiza-descricao) Atualiza descrição do projeto
+* | 6e43a9a Reformula descrição do projeto
+|/  
+* 34c5532 Adiciona instruções de instalação
+* 87a7e21 Adiciona descrição do projeto
+* f89925b Adiciona README.md
+\end{lstlisting}
+
+Depois de confirmar que o merge foi concluído corretamente, remova a branch:
+
+\begin{lstlisting}[language=bash]
+$ git branch -d atualiza-descricao
+Deleted branch atualiza-descricao.
+\end{lstlisting} 
+
+\begin{question}{Atenção.}
+\footnotesize Um conflito de merge não significa que o repositório foi corrompido. O conflito indica apenas que o Git precisa de uma decisão humana para definir o conteúdo final. Antes de concluir o merge, revise o arquivo, remova todos os marcadores de conflito e teste o resultado.
+\end{question}
+
+\subsubsection{Cancelando um merge}
+
+Se você não quiser continuar a resolução do conflito, pode cancelar o merge e retornar ao estado anterior:
+
+\begin{lstlisting}[language=bash]
+$ git merge --abort
+\end{lstlisting} 
+
+Esse comando deve ser executado antes de concluir o merge com um commit.
+
+\subsection{Ignorando arquivos com \texttt{.gitignore}}
+
+Nem todos os arquivos de um projeto devem ser versionados. Arquivos temporários, resultados gerados automaticamente, dados grandes, credenciais e configurações locais devem permanecer fora do repositório.
+
+Para definir quais arquivos o Git deve ignorar, crie um arquivo chamado \textbf{\texttt{.gitignore}} na raiz do repositório:
+
+\begin{lstlisting}[language=bash]
+$ echo "*.log" > .gitignore
+\end{lstlisting}
+
+Crie um arquivo de exemplo (\textbf{\texttt{run.log}}) e consulte o estado do repositório:
+
+\begin{lstlisting}[escapeinside={(*@}{@*)}, language=bash]
+$ echo "Registro temporário" > run.log
+$ git status
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        (*@\aftergroup\beginredcolor@*).gitignore(*@\aftergroup\endredcolor@*)
+
+nothing added to commit but untracked files present (use "git add" to track)
+\end{lstlisting}
+
+O arquivo \textbf{\texttt{run.log}} não será exibido entre os arquivos não rastreados porque corresponde ao padrão \textbf{\texttt{*.log}} definido no \textbf{\texttt{.gitignore}}.
+
+O próprio arquivo \textbf{\texttt{.gitignore}} deve ser versionado para que as regras sejam compartilhadas com os demais colaboradores:
+
+\begin{lstlisting}[language=bash]
+$ git add .gitignore
+$ git commit -m "Adiciona regras ao gitignore"
+[main d47f9e0] Adiciona regras ao gitignore
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .gitignore
+\end{lstlisting}
+
+\begin{question}{Atenção.} 
+\footnotesize O arquivo \textbf{\texttt{.gitignore}} afeta arquivos que ainda não estão sendo rastreados. Adicionar uma regra ao \textbf{\texttt{.gitignore}} não remove automaticamente um arquivo que já faz parte do histórico do Git.
+\end{question}
+
+Caso um arquivo tenha sido adicionado ao Git por engano, remova-o apenas do índice, mantendo a cópia local:
+
+\begin{lstlisting}[language=bash]
+$ git rm --cached <arquivo>
+$ git commit -m "Remove <arquivo> de log do versionamento"
+\end{lstlisting}
+
+Para obter exemplos de arquivos \textbf{\texttt{.gitignore}} para diferentes linguagens e frameworks, consulte o repositório oficial do GitHub: \url{https://github.com/github/gitignore}
+
+\subsection{Adicionando um repositório remoto}
+
+Até este ponto, todas as operações foram realizadas no repositório local. Para compartilhar o projeto e colaborar com outras pessoas, é necessário vinculá-lo a um repositório remoto hospedado em uma plataforma como GitHub, GitLab ou Bitbucket. 
+
+Nesta atividade, será utilizado o \href{https://github.com}{GitHub}.
+
+\subsubsection{Criando o repositório no GitHub}
+
+Acesse o GitHub e crie um novo repositório:
+
+\begin{enumerate}
+  \item clique em \textit{New repository};
+  \item informe um nome para o repositório, como \textbf{\texttt{projeto}};
+  \item descreva o repositório (opcional);
+  \item escolha se o repositório será público ou privado;
+  \item não adicione \texttt{README.md}, \texttt{.gitignore} ou licença;
+  \item clique em \textit{Create repository}.
+\end{enumerate}
+
+\begin{question}{Atenção.}
+\footnotesize Como o repositório local já possui commits, crie um repositório remoto vazio. A criação de arquivos diretamente no GitHub pode gerar históricos diferentes e exigir uma integração adicional antes do primeiro envio.
+\end{question}
+
+\subsubsection{Associando o repositório local ao remoto}
+
+Copie a URL SSH exibida pelo GitHub. Ela terá um formato semelhante a:
+
+\begin{lstlisting}[language=bash]
+git@github.com:seu-usuario/projeto.git
+\end{lstlisting}
+
+No terminal, dentro do diretório \textbf{\texttt{projeto}}, associe a URL ao nome \textbf{\texttt{origin}}:
+
+\begin{lstlisting}[language=bash]
+$ git remote add origin git@github.com:seu-usuario/projeto.git
+\end{lstlisting}
+
+\begin{question}{Nota.}
+\footnotesize O nome \textbf{\texttt{origin}} é uma convenção utilizada para identificar o repositório remoto principal. Outros nomes podem ser usados, mas \textbf{\texttt{origin}} é o padrão adotado pelo Git ao clonar um repositório.
+\end{question}
+
+Verifique os repositórios remotos configurados:
+
+\begin{lstlisting}[language=bash]
+$ git remote -v
+origin git@github.com:seu-usuario/projeto.git (fetch)
+origin git@github.com:seu-usuario/projeto.git (push)
+\end{lstlisting}
+
+As duas linhas indicam as URLs usadas para baixar e enviar alterações.
+
+Para consultar informações adicionais sobre o remoto, execute:
+
+\begin{lstlisting}[language=bash]
+$ git remote show origin
+* remote origin
+  Fetch URL: git@github.com:jvsguerra/projeto.git
+  Push  URL: git@github.com:jvsguerra/projeto.git
+  HEAD branch: (unknown)
+\end{lstlisting}
+
+\subsubsection{Enviando a branch principal}
+
+Envie a branch \textbf{\texttt{main}} para o repositório remoto:
+
+\begin{lstlisting}[language=bash]
+$ git push -u origin main
+\end{lstlisting}
+
+\begin{question}{Nota.}
+\footnotesize A opção \textbf{\texttt{-u}}, abreviação de \textbf{\texttt{--set-upstream}}, estabelece uma associação entre a branch local \textbf{\texttt{main}} e a branch remota \textbf{\texttt{origin/main}}.
+\end{question}
+
+Após essa configuração inicial, os próximos envios poderão ser feitos com:
+
+\begin{lstlisting}[language=bash]
+$ git push
+\end{lstlisting}
+
+Acesse o repositório no GitHub e confirme que o arquivo \textbf{\texttt{README.md}} e o histórico de commits foram enviados.
+
+\begin{question}{Dica} 
+\footnotesize Se a autenticação SSH estiver configurada corretamente, o GitHub reconhecerá sua chave durante o primeiro \textbf{\texttt{push}}.
+Para testar a conexão antes do envio, utilize: 
+\begin{lstlisting}[language=bash]
+$ ssh -T git@github.com
+Hi <seu-usuario>! You've successfully authenticated, but GitHub does not provide shell access.
+\end{lstlisting}
+Caso a autenticação não esteja configurada, acesse a documentação oficial do GitHub: \url{https://docs.github.com/pt/authentication/connecting-to-github-with-ssh}.
+\end{question}
+
+% \subsubsection{Enviando uma branch de trabalho} Crie uma nova branch para atualizar a documentação: \begin{lstlisting}[language=bash] $ git switch -c atualiza-documentacao \end{lstlisting} Adicione uma nova seção ao arquivo \texttt{README.md}: \begin{lstlisting}[language=bash] $ echo "## Documentação" >> README.md $ echo "Consulte os materiais do projeto para mais informações." >> README.md \end{lstlisting} Registre a alteração: \begin{lstlisting}[language=bash] $ git add README.md $ git commit -m "Atualiza documentação do projeto" \end{lstlisting} Envie a nova branch para o repositório remoto: \begin{lstlisting}[language=bash] $ git push -u origin atualiza-documentacao \end{lstlisting} O GitHub exibirá a branch enviada e permitirá abrir um \textit{Pull Request} para propor sua integração à branch \texttt{main}.
+
+% \subsubsubsection{Fazendo um Pull Request}
+
+% \subsection{Comandos para sincronizar com o repositório remoto}
+
+% Diferença entre \texttt{fetch}, \texttt{pull} e \texttt{push}
+
+% \begin{itemize} \item \texttt{git fetch}: baixa informações do repositório remoto sem integrar as alterações; \item \texttt{git pull}: baixa e integra as alterações remotas à branch local atual; \item \texttt{git push}: envia commits e branches locais para o repositório remoto. \end{itemize}
+
+% \begin{lstlisting} Repositório remoto | | git fetch / git pull v Repositório local | | git push v Repositório remoto \end{lstlisting}
+
+\clearpage
+
+\section{Projeto prático: usando e colaborando em um repositório remoto}
 
 \end{document}
