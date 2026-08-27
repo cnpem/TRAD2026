@@ -1,34 +1,23 @@
-# Módulo I: Git
+# Questionário de controle de qualidade
 
-Este diretório reúne os materiais do módulo de **Git** do **Treinamento de Reprodutibilidade para Análise de Dados (TRAD2026)**.
+Dataset analisado: 
 
-O módulo apresenta os fundamentos de controle de versão, o uso do Git em projetos de análise de dados e práticas de colaboração com repositórios remotos.
+1. Quantas sequências foram analisadas? Qual é o comprimento das leituras e o tamanho aproximado do conjunto de dados? Existem diferenças relevantes entre arquivos ou amostras?
 
-## Objetivos
+R:
 
-Ao final do módulo, espera-se que os participantes sejam capazes de:
- 
-- compreender os princípios do controle de versão e sua relação com a reprodutibilidade computacional;
-- criar, clonar e sincronizar repositórios Git;
-- registrar alterações e consultar o histórico do projeto;
-- criar e gerenciar branches e merges;
-- identificar e resolver conflitos de merge;
-- colaborar por meio de forks e Pull Requests;
-- aplicar boas práticas de versionamento em projetos científicos.
- 
-## Materiais
- 
-O diretório contém os seguintes materiais:
- 
-```text
-.
-├── apostila.pdf          # conceitos e fundamentos apresentados no módulo
-├── atividades.pdf        # tutorial dos comandos Git e descrição do projeto prático
-├── guia-comandos.pdf     # referência rápida dos principais comandos Git
-├── QUESTIONARIO.md       # questionário do projeto prático sobre controle de qualidade dos dados
-├── README.md             # este arquivo
-├── scripts/              # scripts utilizados no projeto prático
-│   ├── *.sh              # scripts de execução das atividades do projeto prático
-│   └── INSTRUCTIONS.md   # instruções para execução dos scripts da atividade
-└── slides.pdf            # apresentação utilizada durante a aula expositiva
-```
+2. Como a qualidade das bases varia ao longo das leituras? Existem posições ou arquivos com queda de qualidade? Indique as evidências observadas no relatório.
+
+R: 
+
+3. O conteúdo de GC e a composição das bases são compatíveis com o esperado para o dataset? Existem desvios, distribuições incomuns ou sinais que mereçam investigação?
+
+R:
+
+4. Foram identificados níveis elevados de duplicação, sequências super-representadas ou adaptadores? Descreva os principais achados e suas possíveis implicações para a análise.
+
+R:
+
+5. Com base no conjunto dos resultados, os dados estão adequados para as próximas etapas da análise? É necessário realizar filtragem, remoção de adaptadores, trimming ou outra etapa de pré-processamento? Justifique.
+
+R:
