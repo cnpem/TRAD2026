@@ -47,7 +47,7 @@ O conjunto de cana-de-açúcar inclui principalmente dados genômicos, mas o ace
 
 ## Acesso aos dados
 
-Os arquivos utilizados nas atividades estão disponíveis no Zenodo, em [https://zenodo.org/records/22071921](https://zenodo.org/records/22071921) (DOI: [10.5281/zenodo.22071921](https://doi.org/10.5281/zenodo.22071921)), e podem ser baixados diretamente do repositório do TRAD2026.
+Os arquivos utilizados nas atividades estão disponíveis no Zenodo, em [https://zenodo.org/records/22071921](https://zenodo.org/records/22071921) (DOI: [10.5281/zenodo.22071921](https://doi.org/10.5281/zenodo.22071921)), e podem ser baixados diretamente desse repositório.
 
 Informações sobre a origem, os identificadores e as características dos conjuntos podem ser consultadas na planilha de dados do TRAD2026, a qual está disponível neste diretório com o nome [DATASETS_METADATA.xlsx](DATASETS_METADATA.xlsx).
 
