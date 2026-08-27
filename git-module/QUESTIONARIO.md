@@ -1,6 +1,6 @@
 # Questionário de controle de qualidade
 
-Dataset analisado: 
+Dataset analisado:
 
 1. Quantas sequências foram analisadas? Qual é o comprimento das leituras e o tamanho aproximado do conjunto de dados? Existem diferenças relevantes entre arquivos ou amostras?
 
