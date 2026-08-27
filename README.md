@@ -1,25 +1,27 @@
 # Treinamento em Reprodutibilidade para Análise de Dados (TRAD2026): Git, Containers e Nextflow
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22071921.svg)](https://doi.org/10.5281/zenodo.22071921)
+
 Materiais do Treinamento em Reprodutibilidade para Análise de Dados (TRAD2026), organizado pelas equipes do LNBio/CNPEM e do LNBR/CNPEM.
 
 O treinamento aborda práticas fundamentais de reprodutibilidade computacional, distribuídas em três módulos independentes:
 1. **Git**: versionamento de código e colaboração.
-2. **Containers**: Docker e Singularity/Apptainer para ambientes reprodutíveis.
+2. **Containers**: Singularity/Apptainer para ambientes reprodutíveis.
 3. **Nextflow**: orquestração de pipelines de análise de dados.
 
 ## Conjuntos de dados
 
 As atividades do TRAD2026 utilizam conjuntos de dados de genômica, transcriptômica, metagenômica *shotgun* e sequenciamento de amplicons do gene 16S rRNA.
 
-A origem, os acessos públicos e a organização desses dados no HPC Marvin estão descritos em [Descrição dos conjuntos de dados do TRAD2026](docs/DATASETS.md).
+A origem, os acessos públicos e a organização desses dados estão descritos em [Descrição dos conjuntos de dados do TRAD2026](DATASETS.md) e disponíveis em [https://zenodo.org/records/22071921](https://zenodo.org/records/22071921) (DOI: [10.5281/zenodo.22071921](https://doi.org/10.5281/zenodo.22071921)).
 
 ## Datas
 
 | Módulo | Data | Horário | Local |
 |--------|------|---------|-------|
-| Git | 04/09 | 8h–13h | Sala 946E1 (Sirius) |
-| Containers | 11/09 | 8h–13h | Sala 946E1 (Sirius) |
-| Nextflow | 18/09 | 8h–13h | Sala 946E1 (Sirius) |
+| Git | 04/09 | 8h15–13h | Sala 946E1 (Sirius) |
+| Containers | 11/09 | 8h15–13h | Sala 946E1 (Sirius) |
+| Nextflow | 18/09 | 8h15–13h | Sala 946E1 (Sirius) |
 
 ## Como baixar
 
