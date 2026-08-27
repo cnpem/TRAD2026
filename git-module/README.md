@@ -7,7 +7,7 @@ O módulo apresenta os fundamentos de controle de versão, o uso do Git em proje
 ## Objetivos
 
 Ao final do módulo, espera-se que os participantes sejam capazes de:
- 
+
 - compreender os princípios do controle de versão e sua relação com a reprodutibilidade computacional;
 - criar, clonar e sincronizar repositórios Git;
 - registrar alterações e consultar o histórico do projeto;
