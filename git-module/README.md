@@ -1,4 +1,4 @@
-# Módulo I: Git
+# Módulo I - Git: Controle de versão e colaboração
 
 Este diretório reúne os materiais do módulo de **Git** do **Treinamento de Reprodutibilidade para Análise de Dados (TRAD2026)**.
 
