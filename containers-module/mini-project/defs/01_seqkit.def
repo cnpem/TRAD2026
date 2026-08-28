@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%labels
+    Author  seu.nome@instituicao.br
+    Version 0.1.0
+    Tool    seqkit 2.8.2
+
+%help
+    Container mínimo com SeqKit.
+    Uso: singularity run 01_seqkit.sif stats arquivo.fasta
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends wget ca-certificates procps
+    rm -rf /var/lib/apt/lists/*
+
+    mkdir -p /opt/seqkit && cd /opt/seqkit
+    wget -q https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_linux_amd64.tar.gz
+    tar -xzf seqkit_linux_amd64.tar.gz
+    rm seqkit_linux_amd64.tar.gz
+    chmod +x /opt/seqkit/seqkit
+
+%environment
+    export LC_ALL=C
+    export PATH="/opt/seqkit:$PATH"
+
+%runscript
+    exec seqkit "$@"
+
+%test
+    seqkit version

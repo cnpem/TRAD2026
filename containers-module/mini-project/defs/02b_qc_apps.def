@@ -1,0 +1,31 @@
+Bootstrap: docker
+From: condaforge/miniforge3:24.7.1-0
+
+%labels
+    Author  seu.nome@instituicao.br
+    Version 1.0.0
+
+%post
+    . /opt/conda/etc/profile.d/conda.sh
+    mamba create -y -n fastqc  -c conda-forge -c bioconda fastqc=0.12.1
+    mamba create -y -n fastp   -c conda-forge -c bioconda fastp=0.23.4
+    mamba create -y -n multiqc -c conda-forge -c bioconda multiqc=1.22.3
+    conda clean -afy
+
+%environment
+    export LC_ALL=C
+
+%apprun fastqc
+    exec /opt/conda/envs/fastqc/bin/fastqc "$@"
+%apphelp fastqc
+    FastQC 0.12.1 — singularity run --app fastqc <img.sif> -o out/ *.fastq.gz
+
+%apprun fastp
+    exec /opt/conda/envs/fastp/bin/fastp "$@"
+%apphelp fastp
+    fastp 0.23.4 — singularity run --app fastp <img.sif> -i R1 -I R2 -o ... -O ...
+
+%apprun multiqc
+    exec /opt/conda/envs/multiqc/bin/multiqc "$@"
+%apphelp multiqc
+    MultiQC 1.22.3 — singularity run --app multiqc <img.sif> -o out/ results/

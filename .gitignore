@@ -2,4 +2,6 @@
 *.sif
 *.fastq
 *.fastq.gz
+*.html
+old/
 sifs/
