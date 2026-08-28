@@ -2,22 +2,22 @@
 
 Dataset analisado:
 
-1. Quantas sequências foram analisadas? Qual é o comprimento das leituras e o tamanho aproximado do conjunto de dados? Existem diferenças relevantes entre arquivos ou amostras?
+1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
 R:
 
-2. Como a qualidade das bases varia ao longo das leituras? Existem posições ou arquivos com queda de qualidade? Indique as evidências observadas no relatório.
+2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
 R: 
 
-3. O conteúdo de GC e a composição das bases são compatíveis com o esperado para o dataset? Existem desvios, distribuições incomuns ou sinais que mereçam investigação?
+3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
 R:
 
-4. Foram identificados níveis elevados de duplicação, sequências super-representadas ou adaptadores? Descreva os principais achados e suas possíveis implicações para a análise.
+4. Considere que uma queda de qualidade foi identificada nas regiões finais das leituras. Você modifica os parâmetros de *trimming* e executa novamente a análise. Descreva como essa mudança deveria ser registrada no Git para que seja possível comparar o resultado anterior com o novo resultado e posteriormente recuperar qualquer uma das duas versões da análise.
 
 R:
 
-5. Com base no conjunto dos resultados, os dados estão adequados para as próximas etapas da análise? É necessário realizar filtragem, remoção de adaptadores, trimming ou outra etapa de pré-processamento? Justifique.
+5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
 R:
