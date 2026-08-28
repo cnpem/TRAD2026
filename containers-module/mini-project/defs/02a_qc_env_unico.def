@@ -1,0 +1,24 @@
+Bootstrap: docker
+From: condaforge/miniforge3:24.7.1-0
+
+%files
+    defs/qc.yml /opt/qc.yml
+
+%labels
+    Author  seu.nome@instituicao.br
+    Version 1.0.0
+
+%post
+    . /opt/conda/etc/profile.d/conda.sh
+    mamba env create -f /opt/qc.yml
+    conda clean -afy
+
+%environment
+    export LC_ALL=C
+    export PATH="/opt/conda/envs/qc/bin:$PATH"
+
+%runscript
+    exec "$@"
+
+%test
+    fastqc --version && fastp --version && multiqc --version

@@ -1,596 +1,665 @@
-# Do Zero ao Container — Roteiro Teórico-Prático
+# TRAD2026 - Aula Prática: Construindo Containers com Singularity/Apptainer
 
-**Singularity / Apptainer para Bioinformática**
-
-Material de apoio para executar no seu próprio computador. Leia os conceitos, faça os exercícios na ordem e guarde este arquivo — ele complementa os slides da aula.
-
-> **Convenção de comandos.** Vamos usar `apptainer` em todos os exemplos. Se no seu sistema o comando disponível for `singularity`, tudo funciona igual: basta trocar `apptainer` por `singularity`. Eles são praticamente intercambiáveis (o Apptainer é a continuação do Singularity na Linux Foundation desde 2021).
+**Carga horária:** 4 h (08:00 – 12:00)
+**Pré-requisitos:** acesso ao cluster via SSH, noções de Bash, aula anterior de repositórios (Git/GitHub)
+**Dataset:** leituras RNA-seq pareadas de *Saccharomyces cerevisiae* em `data/raw/`
 
 ---
 
-## Sumário
+## Objetivos
 
-1. [Conceitos essenciais (resumo)](#1-conceitos-essenciais-resumo)
-2. [Preparação do ambiente](#2-preparação-do-ambiente)
-3. [Módulo 1 — Rodar containers prontos](#módulo-1--rodar-containers-prontos)
-4. [Módulo 2 — Repositórios de imagens bioinformáticas](#módulo-2--repositórios-de-imagens-bioinformáticas)
-5. [Módulo 3 — Seqera Containers (seqera.io/containers)](#módulo-3--seqera-containers)
-6. [Módulo 4 — Construir a sua própria imagem (.def → .sif)](#módulo-4--construir-a-sua-própria-imagem)
-7. [Módulo 5 — Configurar as seções do .def](#módulo-5--configurar-as-seções-do-def)
-8. [Módulo 6 — Executar com os seus dados (bind mounts)](#módulo-6--executar-com-os-seus-dados)
-9. [Módulo 7 — Ambientes Conda isolados dentro do container](#módulo-7--ambientes-conda-isolados-dentro-do-container)
-10. [Desafio final](#desafio-final)
-11. [Checklist de aprendizagem](#checklist-de-aprendizagem)
-12. [Solução de problemas](#solução-de-problemas)
-13. [Referências](#referências)
+Ao final da aula o aluno será capaz de:
+
+1. Escrever um arquivo `.def` do zero e construir a imagem `.sif`.
+2. Empacotar ferramentas de bioinformática via Conda, em **ambiente único** e em **ambientes isolados** (SCI-F apps).
+3. Obter containers prontos a partir do **Seqera Containers**.
+4. Diagnosticar e corrigir um `.def` defeituoso.
+5. Submeter um job SLURM de controle de qualidade e versionar os resultados.
 
 ---
 
-## 1. Conceitos essenciais (resumo)
+## Cronograma
 
-**Container** = um pacote que reúne, numa única unidade, o *código + as dependências + as bibliotecas + as configurações do ambiente*. Esse pacote roda de forma **idêntica** em qualquer máquina que tenha o runtime — seu notebook, o cluster HPC ou o computador de um colega. Resolve o clássico *"…mas funciona na minha máquina"*.
-
-**Container × Máquina Virtual.** A VM virtualiza o hardware inteiro e carrega um SO completo (pesada, boot lento). O container compartilha o kernel do host e empacota só o necessário (leve, sobe em segundos).
-
-**Por que Apptainer/Singularity em ciência?**
-- Roda **sem daemon e sem root** — por isso funciona em clusters HPC compartilhados, onde o Docker normalmente não entra.
-- A imagem é **um único arquivo `.sif`**: fácil de mover, versionar, arquivar e citar em um artigo.
-- Integra com SLURM, MPI e GPUs.
-- Ainda assim, **roda imagens Docker** (via `docker://`), então você não perde o ecossistema.
-
-**Reprodutibilidade e controle de ambiente.** O container dá quatro coisas: *ambiente empacotado* (nada de instalar na mão), *isolamento* (sem conflito de versões), *imutabilidade* (o `.sif` é somente-leitura e se comporta igual sempre) e *proveniência* (a receita `.def` documenta como o ambiente foi construído). **Mesmo ambiente → mesmos resultados**, hoje e daqui a anos.
-
-**Vocabulário mínimo:**
-
-| Termo | O que é |
+| Horário | Bloco |
 |---|---|
-| **`.def`** | A *receita*: um arquivo de texto com as instruções de como construir a imagem. |
-| **`.sif`** | A *imagem* final: pacote imutável, executável e autocontido. É o que você roda e compartilha. |
-| **build** | O processo que transforma `.def` em `.sif`. |
-| **Bootstrap / base** | A imagem de origem de onde você parte (ex.: `docker://ubuntu:22.04`). |
-| **bind mount** | Montar pastas do host dentro do container para ler/gravar os seus dados. |
+| 08:00 – 08:20 | Ambientação: checagem do ambiente, cache, `--fakeroot` |
+| 08:20 – 09:00 | **Tarefa 1** — Container do zero |
+| 09:00 – 09:50 | **Tarefa 2** — Containers com Conda (mono e multi-ambiente) |
+| 09:50 – 10:05 | Intervalo |
+| 10:05 – 10:35 | **Tarefa 3** — Seqera Containers |
+| 10:35 – 11:05 | **Tarefa 4** — Desafio: conserte o `.def` |
+| 11:05 – 11:50 | **Tarefa 5** — Job SLURM de QC + tabelas e gráficos |
+| 11:50 – 12:00 | Fechamento, entrega e discussão |
 
 ---
 
-## 2. Preparação do ambiente
+## Bloco 0 — Instalação e ambientação (08:00)
 
-O Apptainer roda em **Linux**. Em Windows use **WSL2** (Ubuntu); em macOS use uma VM leve (ex.: Lima) — instruções mais abaixo.
+### 0.1 Instalando o Singularity/Apptainer no Linux
 
-### 2.1 Linux (Ubuntu/Debian) ou Windows via WSL2
+> ℹ️ **Contexto**
+> No cluster o runtime **já está instalado** — pule para 0.2. Esta seção serve para quem quer construir containers na própria máquina, VM ou WSL2, onde há `sudo`.
+
+**Qual dos dois instalar?** O projeto se dividiu em 2021: **Apptainer** (Linux Foundation, sucessor comunitário, comando `apptainer` com alias `singularity`) e **SingularityCE** (Sylabs, comando `singularity`). Os `.def` deste roteiro funcionam nos dois. Instale **um** deles.
+
+**Opção A — Apptainer via pacote (recomendado)**
 
 ```bash
-sudo apt update
-sudo apt install -y software-properties-common
+# Ubuntu / Debian — PPA oficial
+sudo apt update && sudo apt install -y software-properties-common
 sudo add-apt-repository -y ppa:apptainer/ppa
-sudo apt update
-sudo apt install -y apptainer
-```
+sudo apt update && sudo apt install -y apptainer
 
-> No **Windows**: abra o PowerShell como administrador, rode `wsl --install`, reinicie, abra o Ubuntu recém-instalado e então rode os comandos acima dentro dele.
+# Rocky / AlmaLinux / RHEL 8+ — via EPEL
+sudo dnf install -y epel-release
+sudo dnf install -y apptainer
 
-### 2.2 Rocky Linux / RHEL / Fedora
-
-```bash
-sudo dnf install -y epel-release   # em Fedora, pule esta linha
+# Fedora
 sudo dnf install -y apptainer
 ```
 
-### 2.3 macOS
+Para `.deb`/`.rpm` avulsos, baixe da página de releases (`apptainer_<versão>_amd64.deb`) e instale com `sudo dpkg -i` ou `sudo dnf install ./arquivo.rpm`.
 
-O kernel do macOS não roda containers Linux nativamente. Use o **Lima** (via Homebrew) seguindo a documentação do Apptainer, ou uma VM Linux. Alternativamente, faça os exercícios em uma máquina Linux remota / cluster.
-
-### 2.4 Teste de instalação ✅
+**Opção B — SingularityCE via pacote**
 
 ```bash
-apptainer --version
-apptainer exec docker://alpine cat /etc/alpine-release
+# Baixe o .deb/.rpm correspondente à sua distro em
+# https://github.com/sylabs/singularity/releases
+wget https://github.com/sylabs/singularity/releases/download/v4.4.2/singularity-ce_4.4.2-noble_amd64.deb
+sudo apt install -y ./singularity-ce_4.4.2-noble_amd64.deb
 ```
 
-**Resultado esperado:** a versão do Apptainer aparece e, na segunda linha, um número de versão do Alpine Linux (ex.: `3.20.x`). Se isso funcionou, o Apptainer baixou uma imagem Docker, converteu para `.sif` e executou um comando dentro dela. Você já rodou seu primeiro container. 🎉
+**Opção C — sem `sudo` (usuário comum)**
 
-> **Dica — organize o cache.** O Apptainer guarda downloads em `~/.apptainer/cache`. Para controlar onde isso fica (útil em HPC, onde o `$HOME` tem cota):
+O Apptainer distribui um instalador não privilegiado, útil quando você não é admin da máquina:
+
+```bash
+curl -s https://raw.githubusercontent.com/apptainer/apptainer/main/tools/install-unprivileged.sh \
+  | bash -s - ~/apptainer
+export PATH=$HOME/apptainer/bin:$PATH
+```
+
+**Validação**
+
+```bash
+apptainer --version          # ou: singularity --version
+apptainer exec docker://alpine:3.20 cat /etc/alpine-release
+```
+
+> ⚠️ **`apptainer` vs `singularity`**
+> Ao instalar o Apptainer, o comando `singularity` normalmente existe como alias/link. Se `singularity: command not found` na sua máquina, use `apptainer` — a sintaxe é idêntica. O mesmo vale para as variáveis de ambiente: `APPTAINER_*` e `SINGULARITY_*` são intercambiáveis nas versões recentes.
+
+> 💡 **Dica — pacote setuid**
+> Existem variantes `apptainer-suid` / instalação setuid-root. Só instale se precisar de recursos que exigem privilégio (alguns cenários de mount e criptografia). Para o uso desta aula, a instalação **sem setuid** basta e é mais segura.
+
+> 💡 **Dica — versões**
+> As versões evoluem rápido (Apptainer na série 1.5.x, SingularityCE na 4.4.x em meados de 2026). Confira a versão corrente nas páginas de releases listadas nas **Referências** ao final e registre no README qual runtime e versão você usou.
+
+### 0.2 Preparando o ambiente de trabalho
+
+```bash
+# Qual runtime está disponível?
+singularity --version   # ou: apptainer --version
+which singularity apptainer
+
+# Estrutura de trabalho
+cd $SCRATCH/curso-containers      # ajuste ao seu cluster
+mkdir -p defs env containers data/raw results logs scripts
+```
+
+> 💡 **Dica — cache fora do `$HOME`**
+> O cache de camadas passa fácil de 10 GB e estoura a cota do home. Coloque no `~/.bashrc`:
 > ```bash
-> export APPTAINER_CACHEDIR=$HOME/.apptainer_cache
-> mkdir -p "$APPTAINER_CACHEDIR"
+> export APPTAINER_CACHEDIR=$SCRATCH/.apptainer/cache
+> export APPTAINER_TMPDIR=$SCRATCH/.apptainer/tmp
+> # runtimes mais antigos: SINGULARITY_CACHEDIR / SINGULARITY_TMPDIR
+> mkdir -p $APPTAINER_CACHEDIR $APPTAINER_TMPDIR
 > ```
-> Coloque essa linha no seu `~/.bashrc` para torná-la permanente.
 
-Crie também uma pasta de trabalho para a aula:
-
-```bash
-mkdir -p ~/curso-containers && cd ~/curso-containers
-```
-
----
-
-## Módulo 1 — Rodar containers prontos
-
-🎯 **Objetivo:** entender a diferença entre `pull`, `run`, `exec` e `shell`, e rodar uma imagem já existente.
-
-### 1.1 Baixar (pull) uma imagem para um arquivo `.sif`
-
-```bash
-apptainer pull docker://ubuntu:22.04
-ls -lh ubuntu_22.04.sif
-```
-
-✅ **Esperado:** um arquivo `ubuntu_22.04.sif` de algumas dezenas de MB aparece na pasta. Essa é a sua imagem — portátil e imutável.
-
-### 1.2 Os quatro modos de execução
-
-```bash
-# run  → executa o comando padrão da imagem (%runscript)
-apptainer run ubuntu_22.04.sif echo "olá do container"
-
-# exec → roda um comando arbitrário dentro da imagem
-apptainer exec ubuntu_22.04.sif cat /etc/os-release
-
-# shell → abre um shell interativo dentro do container
-apptainer shell ubuntu_22.04.sif
-#   (dentro dele, teste: cat /etc/os-release ; depois digite: exit)
-```
-
-✅ **Esperado:** `exec` mostra que o SO **dentro** do container é Ubuntu 22.04, mesmo que o seu host seja outra distribuição. Esse é o ponto central: o ambiente viaja junto com a imagem.
-
-🧩 **Desafio:** rode `apptainer exec docker://python:3.12-slim python3 -c "print('python', __import__('sys').version)"` **sem** fazer `pull` antes. O que acontece? (O Apptainer baixa a imagem na hora e a executa.)
+> ⚠️ **Atenção — build sem root**
+> Em cluster você não tem `sudo`. Use `--fakeroot` (depende de *user namespaces* habilitados). Se falhar, as alternativas são:
+> - `--remote` (remote builder do Apptainer/Sylabs);
+> - construir em VM/notebook próprio e transferir o `.sif` por `scp`;
+> - `--sandbox` em diretório, apenas para prototipar.
 
 ---
 
-## Módulo 2 — Repositórios de imagens bioinformáticas
+## Tarefa 1 — Um container do zero (08:20)
 
-🎯 **Objetivo:** aprender a puxar ferramentas de bioinformática já empacotadas, de diferentes fontes. Você quase nunca precisa construir do zero — a comunidade já empacotou milhares de ferramentas.
+**Meta:** entender a anatomia de um `.def` e a diferença entre `%post` e `%environment`.
 
-### 2.1 Docker Hub (imagens com tags limpas)
-
-Muitas organizações mantêm imagens com versionamento simples. Exemplo, a StaPH-B (saúde pública/genômica):
-
-```bash
-apptainer exec docker://staphb/samtools:1.21 samtools --version
-```
-
-✅ **Esperado:** a versão do `samtools` (1.21) impressa a partir de dentro do container, sem você ter instalado nada no host.
-
-### 2.2 BioContainers via Quay.io
-
-O projeto **BioContainers** empacota automaticamente cada pacote do Bioconda como uma imagem, hospedada em `quay.io/biocontainers`. O padrão do endereço é:
-
-```
-docker://quay.io/biocontainers/<ferramenta>:<versão>--<hash-de-build>
-```
-
-O `--<hash-de-build>` **muda** a cada rebuild, então você precisa copiar a *tag exata*. Para descobri-la:
-1. Acesse `https://quay.io/repository/biocontainers/<ferramenta>?tab=tags` (ex.: `.../biocontainers/bcftools?tab=tags`).
-2. Copie a tag mais recente da versão que você quer.
-
-Exemplo (confirme a tag na página antes de rodar):
-
-```bash
-apptainer pull docker://quay.io/biocontainers/bcftools:1.21--h8b25389_0
-apptainer exec bcftools_1.21--h8b25389_0.sif bcftools --version
-```
-
-### 2.3 Galaxy Project — depósito de imagens Singularity prontas
-
-O Galaxy mantém um índice com os `.sif` **já convertidos** dos BioContainers, em `https://depot.galaxyproject.org/singularity/`. Isso evita a conversão local e é ótimo para HPC. Fluxo:
-1. Abra a listagem `https://depot.galaxyproject.org/singularity/` no navegador (é uma lista enorme — use Ctrl+F).
-2. Encontre o nome exato do arquivo, ex.: `samtools:1.21--h50ea8bc_0`.
-3. Puxe direto pela URL:
-
-```bash
-apptainer pull https://depot.galaxyproject.org/singularity/samtools:1.21--h50ea8bc_0
-```
-
-✅ **Esperado:** um `.sif` baixado diretamente, sem etapa de conversão a partir de camadas Docker.
-
-🧩 **Desafio:** obtenha o `fastqc` por **duas** fontes diferentes (Quay.io e Galaxy depot) e compare o tamanho dos `.sif` resultantes.
-
-> **Quando usar qual?**
-> - **Docker Hub** → ferramentas com tags simples e imagens de uso geral.
-> - **BioContainers (Quay.io)** → praticamente qualquer pacote Bioconda, mas você lida com o hash de build.
-> - **Galaxy depot** → o `.sif` pronto do BioContainers, sem conversão (bom para clusters).
-
----
-
-## Módulo 3 — Seqera Containers
-
-🎯 **Objetivo:** gerar um container sob demanda a partir de nomes de pacotes Conda/PyPI, usando a plataforma **[seqera.io/containers](https://seqera.io/containers/)** — sem escrever um `Dockerfile` nem um `.def`.
-
-O Seqera Containers **não é um registro tradicional**: em vez de procurar imagens prontas, você monta um `environment.yml` visualmente (escolhendo pacotes) e a plataforma **constrói a imagem na hora** (por trás, usa o serviço Wave). Ela devolve uma URI de imagem Docker **ou** Singularity que você usa imediatamente. É gratuito e faz varredura de vulnerabilidades (Trivy) no processo.
-
-### 3.1 Gerar uma imagem Singularity pela interface web
-
-1. Acesse **https://seqera.io/containers/**.
-2. Na busca, digite `samtools` e clique em **Add** no resultado `bioconda::samtools`.
-3. (Opcional) adicione um segundo pacote, ex.: `bcftools` — os dois vão para a **mesma** imagem.
-4. Em **Container settings**, escolha **Singularity** e **linux/amd64** (use `arm64` só se o seu processador for ARM, como Apple Silicon em VM ARM).
-5. Clique em **Get Container**.
-6. Copie a **URI da imagem**. Para Singularity ela terá o formato:
-   ```
-   oras://community.wave.seqera.io/library/samtools_bcftools:<identificador>
-   ```
-
-### 3.2 Puxar a imagem no seu computador
-
-```bash
-apptainer pull oras://community.wave.seqera.io/library/samtools:<cole-o-identificador-aqui>
-```
-
-✅ **Esperado:** o `.sif` é baixado do registro comunitário via protocolo **ORAS**. Rode `apptainer exec <arquivo>.sif samtools --version` para confirmar.
-
-> **Nota técnica:** o `pull` via `oras://` exige uma versão de Apptainer/Singularity com suporte ao pseudo-protocolo ORAS (versões recentes têm). Se der erro, atualize o Apptainer (`sudo apt install --only-upgrade apptainer`).
-
-### 3.3 Alternativa sem instalar nada
-
-A interface também permite **baixar o `.sif` como arquivo** diretamente pelo navegador, sem precisar de Apptainer instalado para o download — útil para transferir depois a um cluster.
-
-### 3.4 Multipacote a partir de um `environment.yml`
-
-Se você já tem um `environment.yml` do Conda, pode **colar** os nomes dos pacotes direto na busca. Isso cria um único container com todo o seu ambiente.
-
-🧩 **Desafio:** gere um container com `samtools` **+** `bcftools` **+** `bwa`, puxe-o e confirme que os três comandos existem dentro dele (`apptainer exec img.sif which samtools bcftools bwa`).
-
-> ⚠️ **Reprodutibilidade.** Builds sob demanda são cômodos, mas para reprodutibilidade e proveniência a longo prazo, **fixe a URI exata** que você usou (ela identifica aquele build específico) e, idealmente, **arquive o `.sif`** (ou empurre-o para um registro seu). Não confie que "vou reconstruir depois" — reconstruções futuras podem trazer versões diferentes.
-
----
-
-## Módulo 4 — Construir a sua própria imagem
-
-🎯 **Objetivo:** escrever a sua primeira receita `.def` e transformá-la em um `.sif`.
-
-### 4.1 O clássico "lolcow" (para entender a mecânica)
-
-Crie um arquivo `lolcow.def`:
+### 1.1 Escreva `defs/01_seqkit.def`
 
 ```singularity
-BootStrap: docker
-From: ubuntu:22.04
-
-%post
-    apt-get -y update
-    apt-get -y install cowsay lolcat
-
-%environment
-    export LC_ALL=C
-    export PATH=/usr/games:$PATH
-
-%runscript
-    date | cowsay | lolcat
-
-%labels
-    Author SeuNome
-    Version 1.0
-```
-
-Construa a imagem:
-
-```bash
-apptainer build lolcow.sif lolcow.def
-```
-
-> **Precisa de root?** Em um **computador pessoal Linux** com *user namespaces* habilitados (padrão em distros modernas e no WSL2), o build costuma funcionar **sem `sudo`**. Se der erro de permissão, tente:
-> ```bash
-> apptainer build --fakeroot lolcow.sif lolcow.def
-> ```
-> Em uma máquina onde você **tem** `sudo`, `sudo apptainer build lolcow.sif lolcow.def` também funciona. Em **cluster HPC**, use `--fakeroot`.
-
-Rode:
-
-```bash
-apptainer run lolcow.sif
-```
-
-✅ **Esperado:** uma vaca de ASCII colorida dizendo a data. Parabéns — você construiu e executou um container do zero.
-
-### 4.2 Uma receita bioinformática de verdade
-
-Crie `bio.def` (instala `samtools` + `bcftools`):
-
-```singularity
-BootStrap: docker
+Bootstrap: docker
 From: ubuntu:22.04
 
 %labels
-    Author    SeuNome
-    Version   1.0
-    Descricao Container com samtools + bcftools
-
-%post
-    apt-get -y update
-    apt-get -y install --no-install-recommends samtools bcftools
-    apt-get clean
-
-%environment
-    export LC_ALL=C
-
-%runscript
-    exec samtools "$@"
+    Author  seu.nome@instituicao.br
+    Version 0.1.0
+    Tool    seqkit 2.8.2
 
 %help
-    Container com samtools + bcftools.
-    Uso: apptainer run bio.sif view arquivo.bam
+    Container mínimo com SeqKit.
+    Uso: singularity run 01_seqkit.sif stats arquivo.fasta
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends wget ca-certificates procps
+    rm -rf /var/lib/apt/lists/*
+
+    mkdir -p /opt/seqkit && cd /opt/seqkit
+    wget -q https://github.com/shenwei356/seqkit/releases/download/v2.8.2/seqkit_linux_amd64.tar.gz
+    tar -xzf seqkit_linux_amd64.tar.gz
+    rm seqkit_linux_amd64.tar.gz
+    chmod +x /opt/seqkit/seqkit
+
+%environment
+    export LC_ALL=C
+    export PATH="/opt/seqkit:$PATH"
+
+%runscript
+    exec seqkit "$@"
+
+%test
+    seqkit version
 ```
+
+### 1.2 Construa e teste
 
 ```bash
-apptainer build bio.sif bio.def          # adicione --fakeroot se necessário
-apptainer exec bio.sif samtools --version
-apptainer exec bio.sif bcftools --version
+singularity build --fakeroot containers/01_seqkit.sif defs/01_seqkit.def
+
+singularity run   containers/01_seqkit.sif version
+singularity exec  containers/01_seqkit.sif seqkit stats data/raw/*.fastq.gz
+singularity shell containers/01_seqkit.sif          # explore por dentro
+singularity inspect --helpfile containers/01_seqkit.sif
 ```
 
-✅ **Esperado:** as versões das duas ferramentas, ambas vindas de dentro da **sua** imagem.
+> 💡 **Dica — `%post` ≠ `%environment`**
+> `export` dentro do `%post` vale **apenas durante o build**. Variáveis necessárias em tempo de execução vão no `%environment`. Este é o erro número um de quem começa.
 
-> **Boa prática:** para reprodutibilidade real, fixe versões (`samtools=1.21` via um gerenciador de pacotes que suporte isso, como o Conda) em vez de deixar o `apt` pegar "a mais recente". Veja o Módulo 5 e o desafio final.
+> 💡 **Dica — prototipar rápido**
+> `singularity build --sandbox --fakeroot build/ defs/01_seqkit.def` cria um diretório gravável. Entre com `singularity shell --writable build/`, teste os comandos na mão e só depois transcreva para o `%post`.
+
+> 💡 **Dica — reprodutibilidade**
+> Nunca use `From: ubuntu:latest` nem URLs `latest/download/`. Fixe a versão da base e das ferramentas — é isso que separa um container de um "funcionou na minha máquina".
 
 ---
 
-## Módulo 5 — Configurar as seções do `.def`
+## Tarefa 2 — Containers com Conda (09:00)
 
-🎯 **Objetivo:** entender e manipular cada seção da receita.
+Duas estratégias para as mesmas três ferramentas: `fastqc`, `fastp` e `multiqc`.
 
-| Seção | Para que serve | Quando roda |
-|---|---|---|
-| `Bootstrap:` / `From:` | Define a imagem base de onde partir. | — |
-| `%files` | Copia arquivos do host para dentro da imagem. | build |
-| `%post` | Comandos de construção: instalar softwares, dependências. | build |
-| `%environment` | Variáveis de ambiente da imagem. | execução |
-| `%runscript` | O que roda ao chamar `apptainer run`. | execução |
-| `%labels` | Metadados: autor, versão, descrição. | — |
-| `%help` | Texto exibido por `apptainer run-help`. | — |
+### 2A — Ambiente único
 
-### 5.1 Exercícios de configuração
-
-Partindo do seu `bio.def`:
-
-1. **`%help` e metadados.** Rode `apptainer run-help bio.sif` e `apptainer inspect bio.sif`. Confira que o texto de `%help` e os `%labels` aparecem. Edite-os, reconstrua e verifique de novo.
-
-2. **`%runscript` com argumentos.** O `%runscript` acima usa `exec samtools "$@"`, ou seja, tudo que você passar depois do nome da imagem vai para o `samtools`. Teste:
-   ```bash
-   apptainer run bio.sif --version
-   apptainer run bio.sif view      # (vai reclamar por falta de arquivo — esperado)
-   ```
-
-3. **`%environment`.** Adicione uma variável, por exemplo `export MINHA_REF=/refs/genoma.fa`, reconstrua e confirme:
-   ```bash
-   apptainer exec bio.sif bash -c 'echo $MINHA_REF'
-   ```
-
-4. **`%files`.** Crie um arquivo `notas.txt` no host, adicione uma seção `%files` que o copie para dentro da imagem, reconstrua e verifique:
-   ```singularity
-   %files
-       notas.txt /opt/notas.txt
-   ```
-   ```bash
-   apptainer exec bio.sif cat /opt/notas.txt
-   ```
-
-🧩 **Desafio:** transforme o `%runscript` em um pequeno *pipeline* que recebe um BAM e imprime as estatísticas (`samtools flagstat "$1"`).
-
----
-
-## Módulo 6 — Executar com os seus dados
-
-🎯 **Objetivo:** por padrão, o container enxerga o seu `$HOME`, o `/tmp` e a pasta atual. Para acessar **outras** pastas, use `--bind` (montar pasta do host → caminho dentro do container).
-
-### 6.1 Preparar um dado de teste (offline)
-
-```bash
-mkdir -p ~/curso-containers/dados
-cd ~/curso-containers/dados
-printf '>seq1\nACGTACGTACGTACGTACGT\n>seq2\nTTTTGGGGCCCCAAAA\n' > teste.fasta
-cat teste.fasta
-```
-
-### 6.2 Rodar uma ferramenta sobre esse dado
-
-```bash
-# indexar o FASTA com samtools, usando a imagem que você construiu
-apptainer exec bio.sif samtools faidx teste.fasta
-ls -l teste.fasta.fai
-cat teste.fasta.fai
-```
-
-✅ **Esperado:** um arquivo `teste.fasta.fai` (índice) criado **no host**, gerado por uma ferramenta que só existe **dentro** do container. Como você estava na pasta atual, o bind foi automático.
-
-### 6.3 Montar uma pasta arbitrária com `--bind`
-
-```bash
-apptainer exec --bind /caminho/no/host:/mnt bio.sif samtools faidx /mnt/teste.fasta
-```
-
-Aqui `/caminho/no/host` (fora do `$HOME`) fica visível como `/mnt` dentro do container.
-
-🧩 **Desafio:** monte uma pasta de referências em modo somente-leitura usando a sintaxe `--bind /refs:/refs:ro` e confirme que não é possível gravar nela de dentro do container.
-
----
-
-## Módulo 7 — Ambientes Conda isolados dentro do container
-
-🎯 **Objetivo:** empacotar um ambiente **Conda** (com versões fixas de várias ferramentas) **dentro** de uma imagem Singularity e executá-lo a partir do container.
-
-**Por que juntar os dois?** São camadas complementares de reprodutibilidade:
-- O **container** garante o sistema operacional, as bibliotecas de sistema e a portabilidade.
-- O **Conda** instala centenas de ferramentas de bioinformática (canal **Bioconda**) com **versões exatas**, sem precisar compilar nada.
-
-Combinados, você tem um único `.sif` autocontido cujo ambiente é descrito por um `environment.yml` legível e versionável — o auge da reprodutibilidade.
-
-### 7.1 A lista de versões — `environment.yml`
-
-Crie um arquivo `environment.yml`:
+`env/qc.yml`:
 
 ```yaml
-name: bioenv
+name: qc
 channels:
   - conda-forge
   - bioconda
 dependencies:
-  - samtools=1.21
-  - bcftools=1.21
-  - bwa=0.7.18
+  - fastqc=0.12.1
+  - fastp=0.23.4
+  - multiqc=1.22.3
 ```
 
-O campo `name:` define o nome do ambiente isolado (`bioenv`). As versões estão **fixadas** — é isso que torna o build reproduzível.
-
-### 7.2 A receita — `conda.def`
-
-Crie `conda.def` (instala o Miniforge, que já traz o `mamba`, e cria o ambiente a partir do `environment.yml`):
+`defs/02a_qc_env_unico.def`:
 
 ```singularity
 Bootstrap: docker
-From: ubuntu:22.04
+From: condaforge/miniforge3:24.7.1-0
 
 %files
-    environment.yml /opt/environment.yml
-
-%post
-    apt-get update && apt-get install -y --no-install-recommends wget bzip2 ca-certificates
-    # instala o Miniforge (conda + mamba, canal conda-forge por padrão)
-    wget -qO /tmp/miniforge.sh \
-        https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-    bash /tmp/miniforge.sh -b -p /opt/conda
-    rm /tmp/miniforge.sh
-    # cria o ambiente isolado 'bioenv' a partir do environment.yml
-    /opt/conda/bin/mamba env create -f /opt/environment.yml
-    /opt/conda/bin/mamba clean --all --yes
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-%environment
-    # coloca o env 'bioenv' no PATH -> ele já vem ATIVO, sem 'conda activate'
-    export PATH=/opt/conda/envs/bioenv/bin:$PATH
-    export LC_ALL=C.UTF-8
-    export LANG=C.UTF-8
-
-%runscript
-    exec "$@"
+    env/qc.yml /opt/qc.yml
 
 %labels
-    Author    SeuNome
-    Version   1.0
-    Descricao Ambiente conda isolado (bioenv) dentro do container
-```
-
-Construa a imagem (o `environment.yml` precisa estar na mesma pasta):
-
-```bash
-apptainer build bioenv.sif conda.def        # adicione --fakeroot em cluster HPC
-```
-
-> ⏳ O primeiro build baixa o Miniforge e resolve o ambiente — pode levar alguns minutos. É normal.
-
-### 7.3 O truque da "ativação": PATH em vez de `conda activate`
-
-Dentro de um container não há shell interativo com os *hooks* do Conda carregados, então `conda activate` não funciona bem em scripts. A solução limpa é **colocar o diretório `bin` do ambiente no `PATH`**, feito na seção `%environment`. Assim o ambiente `bioenv` **já vem ativo** em toda execução — você chama a ferramenta diretamente.
-
-### 7.4 Executar a partir do container
-
-```bash
-# as ferramentas do env já estão no PATH (via %environment):
-apptainer exec bioenv.sif samtools --version
-apptainer exec bioenv.sif bcftools --version
-apptainer exec bioenv.sif bwa 2>&1 | head -3
-
-# via %runscript (exec "$@"): tudo após o .sif vai para o shell do container
-apptainer run bioenv.sif samtools --version
-```
-
-✅ **Resultado esperado:** as três ferramentas respondem com suas versões fixadas, todas vindas do ambiente Conda **isolado** dentro da imagem.
-
-### 7.5 Confirmar que veio do ambiente isolado
-
-```bash
-apptainer exec bioenv.sif which samtools
-# -> /opt/conda/envs/bioenv/bin/samtools   (do env 'bioenv', não do sistema)
-```
-
-### 7.6 E se eu tiver mais de um ambiente?
-
-Se a sua imagem tiver **vários** ambientes, não faz sentido colocar todos no `PATH`. Nesse caso, deixe o `%environment` neutro e selecione o ambiente na hora de executar com `conda run -n`, que cuida da ativação completa (inclusive scripts de ativação):
-
-```bash
-apptainer exec bioenv.sif /opt/conda/bin/conda run -n outro_env comando --opcoes
-```
-
-### 7.7 Alternativa mais enxuta — base `micromamba`
-
-Para imagens menores, parta da imagem oficial `mambaorg/micromamba` (que já traz o gerenciador instalado em `/opt/conda`):
-
-```singularity
-Bootstrap: docker
-From: mambaorg/micromamba:1.5.8
-
-%files
-    environment.yml /tmp/environment.yml
+    Author  seu.nome@instituicao.br
+    Version 1.0.0
 
 %post
-    micromamba install -y -n base -f /tmp/environment.yml
-    micromamba clean --all --yes
+    . /opt/conda/etc/profile.d/conda.sh
+    mamba env create -f /opt/qc.yml
+    conda clean -afy
 
 %environment
-    export PATH=/opt/conda/bin:$PATH
+    export LC_ALL=C
+    export PATH="/opt/conda/envs/qc/bin:$PATH"
 
 %runscript
     exec "$@"
+
+%test
+    fastqc --version && fastp --version && multiqc --version
 ```
 
-> 💡 **Atalho:** se você não quiser manter o `.def`, o **Seqera Containers** (Módulo 3) faz exatamente isto por você — recebe um `environment.yml` e devolve a imagem pronta (Docker ou Singularity), já com varredura de segurança.
+```bash
+singularity build --fakeroot containers/02a_qc.sif defs/02a_qc_env_unico.def
+singularity exec containers/02a_qc.sif fastp --version
+```
 
-🧩 **Desafio:** adicione ao `environment.yml` uma versão específica de Python e um pacote instalado via `pip` (dica: use a chave `pip:` dentro de `dependencies:`), reconstrua e confirme com `apptainer exec bioenv.sif python --version`.
+> 💡 **Dica — `conda activate` no `%post`**
+> `conda activate` não funciona em shell não-interativo sem carregar antes o hook: `. /opt/conda/etc/profile.d/conda.sh`. Alternativa que dispensa o problema: **não ativar nada** e apontar o `PATH` direto para `/opt/conda/envs/<env>/bin` no `%environment`.
+
+> 💡 **Dica — imagem menor e build mais rápido**
+> `conda clean -afy` no fim do `%post` costuma cortar 30–50 % do tamanho final. O `mamba` já vem no miniforge e resolve o ambiente em segundos, não minutos.
+
+### 2B — Ambientes isolados (SCI-F apps)
+
+`defs/02b_qc_apps.def`:
+
+```singularity
+Bootstrap: docker
+From: condaforge/miniforge3:24.7.1-0
+
+%labels
+    Author  seu.nome@instituicao.br
+    Version 1.0.0
+
+%post
+    . /opt/conda/etc/profile.d/conda.sh
+    mamba create -y -n fastqc  -c conda-forge -c bioconda fastqc=0.12.1
+    mamba create -y -n fastp   -c conda-forge -c bioconda fastp=0.23.4
+    mamba create -y -n multiqc -c conda-forge -c bioconda multiqc=1.22.3
+    conda clean -afy
+
+%environment
+    export LC_ALL=C
+
+%apprun fastqc
+    exec /opt/conda/envs/fastqc/bin/fastqc "$@"
+%apphelp fastqc
+    FastQC 0.12.1 — singularity run --app fastqc <img.sif> -o out/ *.fastq.gz
+
+%apprun fastp
+    exec /opt/conda/envs/fastp/bin/fastp "$@"
+%apphelp fastp
+    fastp 0.23.4 — singularity run --app fastp <img.sif> -i R1 -I R2 -o ... -O ...
+
+%apprun multiqc
+    exec /opt/conda/envs/multiqc/bin/multiqc "$@"
+%apphelp multiqc
+    MultiQC 1.22.3 — singularity run --app multiqc <img.sif> -o out/ results/
+```
+
+```bash
+singularity build --fakeroot containers/02b_qc_apps.sif defs/02b_qc_apps.def
+singularity run --app fastp containers/02b_qc_apps.sif --version
+singularity inspect --app multiqc --helpfile containers/02b_qc_apps.sif
+```
+
+> 💡 **Dica — quando separar os ambientes?**
+> Ambiente único é mais simples e resolve a maioria dos casos. Separe quando houver **conflito de dependências** (versões incompatíveis de Python, R, Java, `libgcc`) ou quando o solver do Conda travar. Aqui o MultiQC puxa um *stack* Python pesado que costuma colidir com outras ferramentas.
+
+> ⚠️ **Alternativa sem SCI-F**
+> Dá para concatenar tudo no `PATH`:
+> `export PATH="/opt/conda/envs/fastqc/bin:/opt/conda/envs/fastp/bin:/opt/conda/envs/multiqc/bin:$PATH"`
+> Funciona para os binários, mas **não isola bibliotecas compartilhadas** (`LD_LIBRARY_PATH`, `PYTHONPATH`) — o conflito volta pela porta dos fundos. Vale discutir o trade-off com a turma.
 
 ---
 
-## Desafio final
+## Tarefa 3 — Container a partir do Seqera Containers (10:05)
 
-Monte um pequeno projeto reprodutível e versionável:
+**Meta:** aproveitar builds prontos e reprodutíveis, sem escrever `.def`.
 
-1. Escreva um `analise.def` que instale, **com versões fixas**, as ferramentas que você usa (dica: parta de uma base `mambaorg/micromamba` ou use o Seqera Containers para gerar a imagem a partir de um `environment.yml` com versões travadas).
-2. Escreva um `%runscript` que execute uma etapa da sua análise real (ex.: `fastqc`, alinhamento, `samtools sort`).
-3. Construa o `.sif`, rode sobre um dado de teste e confira o resultado.
-4. Crie um repositório Git contendo **o `.def`, o `environment.yml` e um `README`** — **mas não** o `.sif` (é grande; a receita reconstrói tudo).
-5. Escreva no `README` a URI exata do Seqera Containers ou a tag exata da imagem base que você usou, para que qualquer pessoa reproduza o ambiente.
+### Passo a passo
 
-Se você conseguiu fazer isso, alcançou o **Nível 3** de reprodutibilidade da aula: container + receita versionada + proveniência registrada.
+1. Acesse **https://seqera.io/containers/**.
+2. Na aba **Conda packages**, digite `fastqc`, `fastp` e `multiqc` (pode fixar versão: `fastp=0.23.4`, `fastqc=0.12.1`, `multiqc=1.22.3`).
+3. Selecione a arquitetura (**linux/amd64** para a maioria dos clusters).
+4. Escolha **Singularity** como formato de saída → o site devolve uma URI `oras://`. O formato Docker devolve `docker://`.
+5. Copie a URI e traga para o cluster:
+
+```bash
+# Formato Singularity nativo (recomendado)
+singularity pull containers/03_qc_seqera.sif \
+    oras://community.wave.seqera.io/library/fastp_fastqc_multiqc:<TAG_GERADA>
+
+# Container pré-construído:
+singularity pull containers/03_qc_seqera-pre_built.sif \
+    oras://community.wave.seqera.io/library/fastp_fastqc_multiqc:42e386f910e4e983
+
+singularity exec containers/03_qc_seqera.sif multiqc --version
+```
+
+> 💡 **Dica — a tag é o seu registro do ambiente**
+> A tag é um hash determinístico do conjunto de pacotes: a mesma lista gera a mesma tag. **Anote a URI completa no README do repositório** — ela documenta o ambiente melhor que qualquer parágrafo de texto.
+
+> ⚠️ **Atenção — retenção**
+> Containers da comunidade têm retenção limitada. Para material de curso ou artigo, **guarde o `.sif`** em armazenamento próprio (ou publique num registry institucional); não dependa do link permanecer no ar.
+
+> 💡 **Comparação para discussão (5 min)**
+> Rode `du -h containers/*.sif` e compare `02a`, `02b` e `03`. Por que o do Seqera costuma ser menor? (Build multi-stage, base enxuta, sem cache do Conda dentro da imagem.)
 
 ---
 
-## Checklist de aprendizagem
+## Tarefa 4 — Desafio: conserte o `.def` (10:35)
 
-Marque conforme avança:
+Salve o arquivo abaixo como `defs/04_desafio.def`. **Ele não constrói.** Sua missão:
 
-- [ ] Instalei o Apptainer e rodei o container de teste (`alpine`).
-- [ ] Entendi a diferença entre `pull`, `run`, `exec` e `shell`.
-- [ ] Puxei uma ferramenta de bioinformática do Docker Hub.
-- [ ] Puxei uma imagem do BioContainers (Quay.io) usando a tag correta.
-- [ ] Puxei um `.sif` pronto do depósito do Galaxy.
-- [ ] Gerei um container pela plataforma Seqera Containers e o puxei via `oras://`.
-- [ ] Escrevi um `.def`, construí o `.sif` e o executei.
-- [ ] Configurei `%post`, `%environment`, `%runscript`, `%labels`, `%help` e `%files`.
-- [ ] Rodei uma ferramenta sobre os meus próprios dados usando `--bind`.
-- [ ] Construí um container com um ambiente Conda isolado (`environment.yml`) e executei suas ferramentas.
-- [ ] Concluí o desafio final com um projeto versionado no Git.
+1. Encontrar **todos** os defeitos (são pelo menos 6).
+2. Corrigir e construir `containers/04_desafio.sif`.
+3. Validar: `fastqc`, `fastp` e `multiqc` devem responder a `--version`.
+4. Subir o `.def` corrigido para `defs/` no repositório, com mensagem de commit descrevendo as correções.
+
+```singularity
+Bootstrap docker
+From: ubuntu:22.04
+
+%post
+    apt-get install wget
+    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
+    conda activate base
+    mamba install -y -c bioconda fastp multiqc
+    export PATH="/opt/conda/bin:$PATH"
+
+%runscript
+    fastqc "$@"
+```
+
+### Método de trabalho sugerido
+
+```bash
+# Leia a mensagem de erro do build ANTES de mexer no arquivo
+singularity build --fakeroot containers/04_desafio.sif defs/04_desafio.def 2>&1 | tee logs/build_04.log
+
+# Reproduza o passo problemático interativamente
+singularity shell docker://ubuntu:22.04
+```
+
+> 💡 **Dica — checklist de depuração**
+> - A sintaxe do cabeçalho está correta (`chave: valor`)?
+> - Todo `apt-get install` foi precedido de `apt-get update` e usa `-y`?
+> - Download por HTTPS exige `ca-certificates` instalado.
+> - O `conda` está no `PATH` no momento em que é chamado?
+> - Variáveis exportadas no `%post` **não** sobrevivem ao runtime.
+> - O `%runscript` chama algo que foi realmente instalado?
+> - Toda ferramenta tem versão **fixada**?
+
+<details>
+<summary><b>Gabarito</b> — abrir só depois de tentar</summary>
+
+| # | Defeito | Correção |
+|---|---|---|
+| 1 | `Bootstrap docker` sem dois-pontos | `Bootstrap: docker` |
+| 2 | `apt-get install` sem `update` e sem `-y` (build trava esperando confirmação) | `apt-get update && apt-get install -y --no-install-recommends wget ca-certificates` |
+| 3 | `wget` em HTTPS sem `ca-certificates` | incluir o pacote na mesma linha |
+| 4 | `conda activate` sem carregar o hook | `. /opt/conda/etc/profile.d/conda.sh` antes |
+| 5 | `mamba`/`conda` fora do `PATH` durante o `%post` | `export PATH=/opt/conda/bin:$PATH` logo após a instalação |
+| 6 | `export PATH` no `%post` não persiste | mover para um bloco `%environment` |
+| 7 | `%runscript` invoca `fastqc`, que nunca foi instalado | instalar `fastqc` e usar `exec` |
+| 8 | `latest/download` e pacotes sem versão | fixar versões |
+| 9 | Ausência de `%labels`, `%help` e `%test` | boa prática: adicionar |
+
+Use o `defs/02a_qc_env_unico.def` como modelo da versão corrigida.
+</details>
 
 ---
 
-## Solução de problemas
+## Tarefa 5 — Job SLURM de controle de qualidade (11:05)
 
-| Sintoma | Causa provável / solução |
+**Meta:** rodar `fastqc → fastp → fastqc → multiqc` via SLURM, extrair métricas para tabela e gráficos, e versionar.
+
+### 5.1 `scripts/qc_slurm.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=qc_yeast
+#SBATCH --partition=short
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=01:00:00
+#SBATCH --output=logs/qc_%j.out
+#SBATCH --error=logs/qc_%j.err
+
+set -euo pipefail
+
+SIF=$PWD/containers/02a_qc.sif
+RAW=$PWD/data/raw
+OUT=$PWD/results/qc
+THREADS=${SLURM_CPUS_PER_TASK:-4}
+
+mkdir -p "$OUT"/{fastqc_raw,fastp,fastqc_trim,multiqc,tables,figures} logs
+
+# Torna o diretório de trabalho visível dentro do container
+export APPTAINER_BINDPATH="$PWD"
+
+echo "[$(date +%T)] FastQC — leituras brutas"
+singularity exec "$SIF" fastqc -t "$THREADS" -o "$OUT/fastqc_raw" "$RAW"/*.fastq.gz
+
+echo "[$(date +%T)] fastp — filtragem e remoção de adaptadores"
+for R1 in "$RAW"/*_1.fastq.gz; do
+    S=$(basename "$R1" _1.fastq.gz)
+    R2="$RAW/${S}_2.fastq.gz"
+    singularity exec "$SIF" fastp \
+        -i "$R1" -I "$R2" \
+        -o "$OUT/fastp/${S}_1.trim.fastq.gz" \
+        -O "$OUT/fastp/${S}_2.trim.fastq.gz" \
+        --detect_adapter_for_pe \
+        --qualified_quality_phred 20 --length_required 36 \
+        --thread "$THREADS" \
+        --json "$OUT/fastp/${S}.fastp.json" \
+        --html "$OUT/fastp/${S}.fastp.html"
+done
+
+echo "[$(date +%T)] FastQC — leituras filtradas"
+singularity exec "$SIF" fastqc -t "$THREADS" -o "$OUT/fastqc_trim" "$OUT"/fastp/*.trim.fastq.gz
+
+echo "[$(date +%T)] MultiQC — relatório consolidado"
+singularity exec "$SIF" multiqc -f -o "$OUT/multiqc" "$OUT"
+
+echo "[$(date +%T)] Sumarizando métricas"
+singularity exec "$SIF" python3 scripts/parse_fastp.py
+
+echo "[$(date +%T)] Concluído."
+```
+
+```bash
+sbatch scripts/qc_slurm.sh
+squeue -u $USER
+tail -f logs/qc_<JOBID>.out
+```
+
+> 💡 **Dica — bind mounts**
+> Por padrão o container só enxerga `$HOME`, `/tmp` e o diretório atual. Para dados em `/scratch` ou `/lustre`, use `-B /scratch:/scratch` ou `export APPTAINER_BINDPATH="/scratch,/lustre"`. Erro clássico do dia: *"No such file or directory"* para um arquivo que existe — é bind faltando.
+
+> 💡 **Dica — threads**
+> Sempre derive `-t/--thread` de `$SLURM_CPUS_PER_TASK`. Um `-t 16` fixo em job com `--cpus-per-task=4` gera *oversubscription* e degrada o nó inteiro.
+
+> 💡 **Dica — usando o container de apps**
+> Com o `02b_qc_apps.sif`, troque `singularity exec "$SIF" fastp ...` por `singularity run --app fastp "$SIF" ...`.
+
+### 5.2 `scripts/parse_fastp.py` — métricas em tabela
+
+```python
+#!/usr/bin/env python3
+"""Consolida os JSON do fastp em uma tabela TSV."""
+import csv, glob, json, os
+
+rows = []
+for f in sorted(glob.glob("results/qc/fastp/*.fastp.json")):
+    d = json.load(open(f))
+    b = d["summary"]["before_filtering"]
+    a = d["summary"]["after_filtering"]
+    rows.append({
+        "amostra":         os.path.basename(f).replace(".fastp.json", ""),
+        "reads_brutas":    b["total_reads"],
+        "reads_filtradas": a["total_reads"],
+        "pct_retidas":     round(100 * a["total_reads"] / b["total_reads"], 2),
+        "q30_antes_pct":   round(100 * b["q30_rate"], 2),
+        "q30_depois_pct":  round(100 * a["q30_rate"], 2),
+        "gc_pct":          round(100 * a["gc_content"], 2),
+        "len_media_r1":    a["read1_mean_length"],
+        "duplicacao_pct":  round(100 * d["duplication"]["rate"], 2),
+    })
+
+out = "results/qc/tables/fastp_summary.tsv"
+with open(out, "w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=rows[0].keys(), delimiter="\t")
+    w.writeheader()
+    w.writerows(rows)
+print(f"{len(rows)} amostras escritas em {out}")
+```
+
+### 5.3 `scripts/plot_qc.R` — gráficos
+
+```r
+library(tidyverse)
+
+d <- read_tsv("results/qc/tables/fastp_summary.tsv", show_col_types = FALSE)
+
+# 1. Reads antes x depois da filtragem
+p1 <- d |>
+  select(amostra, reads_brutas, reads_filtradas) |>
+  pivot_longer(-amostra, names_to = "etapa", values_to = "reads") |>
+  mutate(etapa = factor(etapa,
+                        levels = c("reads_brutas", "reads_filtradas"),
+                        labels = c("Bruto", "Filtrado"))) |>
+  ggplot(aes(fct_reorder(amostra, reads), reads / 1e6, fill = etapa)) +
+  geom_col(position = position_dodge(0.8), width = 0.7) +
+  coord_flip() +
+  scale_fill_manual(values = c("grey65", "#2c7fb8")) +
+  labs(x = NULL, y = "Milhões de reads", fill = NULL,
+       title = "Reads por amostra, antes e depois do fastp") +
+  theme_bw(base_size = 12)
+
+# 2. Ganho de qualidade (Q30)
+p2 <- d |>
+  ggplot(aes(q30_antes_pct, q30_depois_pct, label = amostra)) +
+  geom_abline(linetype = 2, colour = "grey60") +
+  geom_point(size = 3, colour = "#e6550d") +
+  ggrepel::geom_text_repel(size = 3) +
+  labs(x = "% bases Q30 (bruto)", y = "% bases Q30 (filtrado)",
+       title = "Efeito da filtragem sobre a qualidade") +
+  theme_bw(base_size = 12)
+
+dir.create("results/qc/figures", showWarnings = FALSE, recursive = TRUE)
+ggsave("results/qc/figures/reads_por_amostra.png", p1, width = 7, height = 4.5, dpi = 300)
+ggsave("results/qc/figures/q30_antes_depois.png",  p2, width = 6, height = 5,   dpi = 300)
+```
+
+> 💡 **Dica — R dentro do container**
+> Adicione `r-base=4.4`, `r-tidyverse` e `r-ggrepel` ao `env/qc.yml` (ou crie um app `plot` no container de apps) e rode:
+> `singularity exec containers/02a_qc.sif Rscript scripts/plot_qc.R`.
+> Assim tabela e figura nascem do **mesmo container** que gerou os dados — reprodutibilidade de ponta a ponta.
+
+### 5.4 Versionamento
+
+```bash
+cat >> .gitignore <<'EOF'
+data/raw/
+*.fastq.gz
+*.sif
+results/qc/fastp/*.trim.fastq.gz
+EOF
+
+git add defs/ env/ scripts/ .gitignore \
+        results/qc/tables/ results/qc/figures/ \
+        results/qc/multiqc/multiqc_report.html
+git commit -m "QC RNA-seq S. cerevisiae: pipeline em container + tabelas e figuras"
+git push
+```
+
+> ⚠️ **Nunca versione `.sif` nem FASTQ.** Um `.sif` de 1–2 GB inutiliza o repositório. Versione o **`.def`** (a receita) e, se necessário, a URI do container ou o hash de `singularity inspect`.
+
+---
+
+## Fechamento (11:50)
+
+### Entregáveis no repositório
+
+- [ ] `defs/01_seqkit.def`
+- [ ] `defs/02a_qc_env_unico.def` + `env/qc.yml`
+- [ ] `defs/02b_qc_apps.def`
+- [ ] `README.md` com a URI do container do Seqera
+- [ ] `defs/04_desafio.def` **corrigido**, com commit explicando as correções
+- [ ] `scripts/qc_slurm.sh`, `scripts/parse_fastp.py`, `scripts/plot_qc.R`
+- [ ] `results/qc/tables/fastp_summary.tsv`, figuras `.png` e `multiqc_report.html`
+
+### Discussão final (5 min)
+
+1. Quando escrever um `.def` próprio e quando puxar um container pronto?
+2. `.def` versionado vs. `.sif` arquivado: que garantias cada um dá para reprodutibilidade?
+3. Que parte deste pipeline você automatizaria com Nextflow/Snakemake — e o que muda no container?
+
+### Erros mais comuns do dia (colar no quadro)
+
+| Sintoma | Causa provável |
 |---|---|
-| `FATAL: ... could not use fakeroot` no build | *User namespaces* desabilitados. Tente sem `--fakeroot`, ou com `sudo`, ou peça ao admin do cluster. |
-| `pull` do `oras://` falha | Versão antiga sem suporte a ORAS. `sudo apt install --only-upgrade apptainer`. |
-| `toomanyrequests` ao puxar do Docker Hub | Limite de requisições anônimas do Docker Hub. Espere um pouco, ou use BioContainers/Galaxy depot. |
-| Sem espaço em disco durante o build/pull | Aponte o cache para um disco maior: `export APPTAINER_CACHEDIR=/caminho/grande`. |
-| Ferramenta "não encontra" um arquivo que existe | O caminho está fora do que o container enxerga. Use `--bind pasta_do_host:/mnt`. |
-| Tag do BioContainers "não existe" | O hash de build mudou. Copie a tag atual da aba *Tags* no Quay.io ou do depósito do Galaxy. |
-| macOS não roda `apptainer` | O kernel não é Linux. Use Lima/VM, ou faça os exercícios em uma máquina Linux. |
+| `command not found` ao rodar o container | `PATH` exportado no `%post` em vez do `%environment` |
+| Build trava sem sair | `apt-get install` sem `-y` |
+| `conda: command not found` | falta `. /opt/conda/etc/profile.d/conda.sh` |
+| `No such file or directory` com arquivo que existe | bind mount ausente |
+| Disco cheio / cota estourada | `APPTAINER_CACHEDIR` apontando para o `$HOME` |
+| Resultado diferente do da semana passada | versões não fixadas |
 
 ---
 
-## Referências
+## Referências e links úteis
 
-- Apptainer — Instalação: https://apptainer.org/docs/admin/main/installation.html
-- Apptainer — Guia do usuário / Quick Start: https://apptainer.org/docs/user/main/quick_start.html
-- BioContainers (registro): https://quay.io/organization/biocontainers
-- Galaxy Project — depósito de imagens Singularity: https://depot.galaxyproject.org/singularity/
-- Seqera Containers: https://seqera.io/containers/
-- Seqera / Wave (documentação): https://docs.seqera.io/wave
+### Documentação oficial dos runtimes
 
----
+| Recurso | Link |
+|---|---|
+| Apptainer — User Guide (última versão) | https://apptainer.org/docs/user/latest/ |
+| Apptainer — Definition Files (referência das seções) | https://apptainer.org/docs/user/latest/definition_files.html |
+| Apptainer — Admin Guide / instalação | https://apptainer.org/docs/admin/latest/installation.html |
+| Apptainer — releases | https://github.com/apptainer/apptainer/releases |
+| SingularityCE — User Guide | https://docs.sylabs.io/guides/latest/user-guide/ |
+| SingularityCE — Admin Guide / instalação | https://docs.sylabs.io/guides/latest/admin-guide/installation.html |
+| SingularityCE — releases | https://github.com/sylabs/singularity/releases |
 
-*Bons builds! Qualquer imagem que você construir hoje vai rodar igual no seu notebook, no cluster e no computador de quem for reproduzir a sua análise.*
+### Tópicos específicos
+
+| Tema | Link |
+|---|---|
+| Bind mounts e sistemas de arquivos | https://apptainer.org/docs/user/latest/bind_paths_and_mounts.html |
+| Variáveis de ambiente e `%environment` | https://apptainer.org/docs/user/latest/environment_and_metadata.html |
+| Build `--fakeroot` sem root | https://apptainer.org/docs/user/latest/fakeroot.html |
+| Apps SCI-F (`%apprun`, `%apphelp`) | https://apptainer.org/docs/user/latest/definition_files.html#apps |
+| Suporte a GPU (`--nv`, `--rocm`) | https://apptainer.org/docs/user/latest/gpu.html |
+| Especificação SCI-F | https://sci-f.github.io/ |
+
+### Registries e containers prontos
+
+| Recurso | Link |
+|---|---|
+| Seqera Containers (gerador usado na Tarefa 3) | https://seqera.io/containers/ |
+| Wave — documentação | https://docs.seqera.io/wave |
+| BioContainers — registry | https://biocontainers.pro/registry |
+| Galaxy Depot (imagens do Bioconda) | https://depot.galaxyproject.org/singularity/ |
+| Docker Hub | https://hub.docker.com/ |
+| Quay.io (host dos BioContainers) | https://quay.io/organization/biocontainers |
+
+### Conda / Bioconda
+
+| Recurso | Link |
+|---|---|
+| Bioconda — pacotes disponíveis | https://bioconda.github.io/conda-package_index.html |
+| Miniforge (base usada nos `.def`) | https://github.com/conda-forge/miniforge |
+| Boas práticas de ambientes Conda | https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html |
+
+### Ferramentas da Tarefa 5
+
+| Ferramenta | Link |
+|---|---|
+| FastQC | https://www.bioinformatics.babraham.ac.uk/projects/fastqc/ |
+| fastp — repositório e manual | https://github.com/OpenGene/fastp |
+| MultiQC — documentação | https://docs.seqera.io/multiqc |
+| SLURM — `sbatch` | https://slurm.schedmd.com/sbatch.html |
+
+### Leitura complementar
+
+| Tema | Link |
+|---|---|
+| Kurtzer et al. (2017), artigo original do Singularity | https://doi.org/10.1371/journal.pone.0177459 |
+| Gruening et al. (2018), reprodutibilidade em bioinformática | https://doi.org/10.1016/j.cels.2018.03.014 |
+| Nextflow — uso de containers | https://www.nextflow.io/docs/latest/container.html |
+| Snakemake — integração com Apptainer/Conda | https://snakemake.readthedocs.io/en/stable/snakefiles/deployment.html |
+
+> 💡 **Dica final**
+> A documentação do Apptainer usa o caminho `/latest/` nas URLs — sempre aponta para a versão corrente. Ao citar comportamento específico em relatórios ou material didático, troque `latest` pela versão exata (ex.: `/1.5/`) para que o link continue descrevendo o que você testou.

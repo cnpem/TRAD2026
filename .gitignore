@@ -1,0 +1,7 @@
+# Ignora arquivos de build de containers e dados brutos de sequenciamento em formato fastq / fastq.gz
+*.sif
+*.fastq
+*.fastq.gz
+*.html
+old/
+sifs/

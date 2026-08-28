@@ -1,0 +1,13 @@
+Bootstrap docker
+From: ubuntu:22.04
+
+%post
+    apt-get install wget
+    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
+    conda activate base
+    mamba install -y -c bioconda fastp multiqc
+    export PATH="/opt/conda/bin:$PATH"
+
+%runscript
+    fastqc "$@"
