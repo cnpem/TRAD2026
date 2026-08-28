@@ -38,10 +38,10 @@ O repositório está organizado em três módulos de treinamento e em arquivos c
 
 ```text
 TRAD2026/
+├── .gitignore                    # Arquivos e diretórios ignorados pelo Git
 ├── containers-module/            # Material do módulo de containers
 ├── git-module/                   # Material do módulo de Git
 ├── nextflow-module/              # Material do módulo de Nextflow
-├── .gitignore                    # Arquivos e diretórios ignorados pelo Git
 ├── DATASETS_METADATA.xlsx        # Metadados detalhados dos conjuntos de dados
 ├── DATASETS.md                   # Descrição dos conjuntos de dados do curso
 ├── OMICS_DATA_TYPES.md           # Introdução aos principais tipos de dados ômicos

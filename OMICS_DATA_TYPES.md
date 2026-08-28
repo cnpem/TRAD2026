@@ -2,6 +2,7 @@
 
 <p align="center">
 Laboratório Nacional de Biociências (LNBio) · Centro Nacional de Pesquisa em Energia e Materiais (CNPEM)
+<br>
 Laboratório Nacional de Biorrenováveis (LNBR) · Centro Nacional de Pesquisa em Energia e Materiais (CNPEM)
 </p>
 

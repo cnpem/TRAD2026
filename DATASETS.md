@@ -1,7 +1,8 @@
 <h1 align="center">Treinamento em Reprodutibilidade para Análise de Dados (TRAD2026): descrição dos conjuntos de dados ômicos</h1>
 
 <p align="center">
-Laboratório Nacional de Biociências (LNBio) · Centro Nacional de Pesquisa em Energia e Materiais (CNPEM)<br>
+Laboratório Nacional de Biociências (LNBio) · Centro Nacional de Pesquisa em Energia e Materiais (CNPEM)
+<br>
 Laboratório Nacional de Biorrenováveis (LNBR) · Centro Nacional de Pesquisa em Energia e Materiais (CNPEM)
 </p>
 
