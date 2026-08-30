@@ -5,3 +5,8 @@
 *.html
 old/
 sifs/
+
+# Ignora arquivos de resultados de análises e logs
+results/
+*.out
+*.err
