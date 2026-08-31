@@ -27,7 +27,6 @@ Ao final do módulo, espera-se que os participantes sejam capazes de:
 .
 ├── apostila.pdf          # conceitos e fundamentos apresentados no módulo
 ├── atividades.md         # tutorial e roteiro da atividade prática
-├── guia-comandos.pdf     # referência rápida dos principais comandos Git
 ├── QUESTIONARIO.md       # questionário sobre os conceitos discutidos nesse módulo
 ├── README.md             # este arquivo
 ├── atividades/           # scripts utilizados no projeto prático
