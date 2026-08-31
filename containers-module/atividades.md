@@ -404,64 +404,236 @@ Use o `defs/02a_qc_env_unico.def` como modelo da versão corrigida.
 
 **Meta:** rodar `fastqc → fastp → fastqc → multiqc` via SLURM, extrair métricas para tabela e gráficos, e versionar.
 
-### 5.1 `scripts/qc_slurm.sh`
+### 5.1 `atividades/scripts/qc_module_II_slurm_v0.2.sh`
 
 ```bash
-#!/bin/bash
-#SBATCH --job-name=qc_yeast
-#SBATCH --partition=short
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=16G
-#SBATCH --time=01:00:00
-#SBATCH --output=logs/qc_%j.out
-#SBATCH --error=logs/qc_%j.err
+#!/usr/bin/env bash
+# =============================================================================
+#  qc.sh - FastQC -> fastp -> FastQC -> MultiQC -> tabela resumo -> figuras
+#
+#  Uso:  ./qc.sh <container.sif> <projeto> <dir_saida> [dir_reads]
+#
+#  dir_reads e opcional; se omitido, usa o diretorio atual.
+#  A saida das ferramentas vai para <dir_saida>/<projeto>/<projeto>_<data>.log
+#
+#  A tabela resumo e as figuras sao geradas pelo python do proprio container
+#  (o env do MultiQC ja traz matplotlib), sem dependencia externa.
+# =============================================================================
 
-set -euo pipefail
+set -Eeuo pipefail
 
-SIF=$PWD/containers/02a_qc.sif
-RAW=$PWD/data/raw
-OUT=$PWD/results/qc
-THREADS=${SLURM_CPUS_PER_TASK:-4}
+[[ $# -ge 3 ]] || { echo "Uso: $(basename "$0") <container.sif> <projeto> <dir_saida> [dir_reads]" >&2; exit 1; }
 
-mkdir -p "$OUT"/{fastqc_raw,fastp,fastqc_trim,multiqc,tables,figures} logs
+SIF="$(readlink -f "$1")"
+PROJECT="$2"
+OUT="$(readlink -f "$3")"
+RAW="$(readlink -f "${4:-$PWD}")"
 
-# Torna o diretório de trabalho visível dentro do container
-export APPTAINER_BINDPATH="$PWD"
+EXT="fastq.gz"
+THREADS="${SLURM_CPUS_PER_TASK:-$(nproc)}"
+BASE_PATH="/opt/conda/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+PYTHON_BIN="/opt/conda/envs/multiqc/bin/python"   # python do container (traz matplotlib)
 
-echo "[$(date +%T)] FastQC — leituras brutas"
-singularity exec "$SIF" fastqc -t "$THREADS" -o "$OUT/fastqc_raw" "$RAW"/*.fastq.gz
+[[ -f "$SIF" ]] || { echo "ERRO: container inexistente: $SIF" >&2; exit 1; }
+[[ -d "$RAW" ]] || { echo "ERRO: diretorio de reads inexistente: $RAW" >&2; exit 1; }
 
-echo "[$(date +%T)] fastp — filtragem e remoção de adaptadores"
-for R1 in "$RAW"/*_1.fastq.gz; do
-    S=$(basename "$R1" _1.fastq.gz)
-    R2="$RAW/${S}_2.fastq.gz"
-    singularity exec "$SIF" fastp \
-        -i "$R1" -I "$R2" \
-        -o "$OUT/fastp/${S}_1.trim.fastq.gz" \
-        -O "$OUT/fastp/${S}_2.trim.fastq.gz" \
-        --detect_adapter_for_pe \
-        --qualified_quality_phred 20 --length_required 36 \
-        --thread "$THREADS" \
-        --json "$OUT/fastp/${S}.fastp.json" \
-        --html "$OUT/fastp/${S}.fastp.html"
+DIR="$OUT/$PROJECT"
+QC1="$DIR/01_fastqc_raw"; FP="$DIR/02_fastp"; QC2="$DIR/03_fastqc_trimmed"
+MQC="$DIR/04_multiqc"; TAB="$DIR/05_tabelas"; FIG="$DIR/06_figuras"; AUX="$DIR/00_scripts"
+mkdir -p "$QC1" "$FP" "$QC2" "$MQC" "$TAB" "$FIG" "$AUX"
+LOG="$DIR/${PROJECT}_$(date +%Y%m%d_%H%M%S).log"
+
+msg() { printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
+trap 'msg "ERRO na linha $LINENO. Veja: $LOG"' ERR
+
+# Executa um app SCIF da imagem, com a saida redirecionada para o log
+sing() {
+    local app="$1"; shift
+    singularity run --app "$app" --cleanenv \
+        --env "PATH=/opt/conda/envs/${app}/bin:${BASE_PATH}" --env "LC_ALL=C" \
+        -B "$RAW:$RAW:ro" -B "$OUT:$OUT" "$SIF" "$@" >>"$LOG" 2>&1
+}
+
+# Executa o python do container (etapas 5 e 6)
+sing_py() {
+    singularity exec --cleanenv --env "LC_ALL=C" \
+        -B "$RAW:$RAW:ro" -B "$OUT:$OUT" "$SIF" "$PYTHON_BIN" "$@" >>"$LOG" 2>&1
+}
+
+# --- amostras ----------------------------------------------------------------
+shopt -s nullglob
+SUF=""
+for s in _R1_001 _R1 _1; do
+    R1S=( "$RAW"/*"${s}.${EXT}" )
+    [[ ${#R1S[@]} -gt 0 ]] && { SUF="$s"; break; }
 done
+[[ -n "$SUF" ]] || R1S=( "$RAW"/*."$EXT" )
+[[ ${#R1S[@]} -gt 0 ]] || { echo "ERRO: nenhum *.${EXT} em $RAW" >&2; exit 1; }
 
-echo "[$(date +%T)] FastQC — leituras filtradas"
-singularity exec "$SIF" fastqc -t "$THREADS" -o "$OUT/fastqc_trim" "$OUT"/fastp/*.trim.fastq.gz
+msg "Job iniciado | projeto: $PROJECT | ${#R1S[@]} amostra(s) | $THREADS threads"
 
-echo "[$(date +%T)] MultiQC — relatório consolidado"
-singularity exec "$SIF" multiqc -f -o "$OUT/multiqc" "$OUT"
+# --- 1) FastQC nos reads brutos ----------------------------------------------
+msg "Etapa 1/6 - FastQC (reads brutos): iniciada"
+sing fastqc --threads "$THREADS" --outdir "$QC1" "$RAW"/*."$EXT"
+msg "Etapa 1/6 - FastQC (reads brutos): concluida"
 
-echo "[$(date +%T)] Sumarizando métricas"
-singularity exec "$SIF" python3 scripts/parse_fastp.py
+# --- 2) fastp ----------------------------------------------------------------
+msg "Etapa 2/6 - fastp (trimagem): iniciada"
+for R1 in "${R1S[@]}"; do
+    SAMPLE="$(basename "$R1" ".${EXT}")"; SAMPLE="${SAMPLE%$SUF}"
+    R2=""
+    [[ -n "$SUF" ]] && R2="${R1/${SUF}.${EXT}/${SUF/1/2}.${EXT}}"
 
-echo "[$(date +%T)] Concluído."
+    if [[ -n "$R2" && -f "$R2" ]]; then
+        sing fastp --in1 "$R1" --in2 "$R2" \
+            --out1 "$FP/${SAMPLE}_R1.trimmed.$EXT" --out2 "$FP/${SAMPLE}_R2.trimmed.$EXT" \
+            --json "$FP/$SAMPLE.fastp.json" --html "$FP/$SAMPLE.fastp.html" \
+            --thread "$THREADS" --detect_adapter_for_pe \
+            -5 -3 -y -p --qualified_quality_phred 20 --length_required 50
+    else
+        sing fastp --in1 "$R1" --out1 "$FP/${SAMPLE}.trimmed.$EXT" \
+            --json "$FP/$SAMPLE.fastp.json" --html "$FP/$SAMPLE.fastp.html" \
+            --thread "$THREADS" \
+            -5 -3 -y -p --qualified_quality_phred 20 --length_required 50
+    fi
+done
+msg "Etapa 2/6 - fastp (trimagem): concluida"
+
+# --- 3) FastQC nos reads processados -----------------------------------------
+msg "Etapa 3/6 - FastQC (reads processados): iniciada"
+sing fastqc --threads "$THREADS" --outdir "$QC2" "$FP"/*.trimmed."$EXT"
+msg "Etapa 3/6 - FastQC (reads processados): concluida"
+
+# --- 4) MultiQC --------------------------------------------------------------
+msg "Etapa 4/6 - MultiQC: iniciada"
+sing multiqc --force --title "$PROJECT" --filename "${PROJECT}_multiqc_report.html" \
+    --outdir "$MQC" "$QC1" "$FP" "$QC2"
+msg "Etapa 4/6 - MultiQC: concluida"
+
+# --- 5) Tabela resumo dos JSON do fastp --------------------------------------
+msg "Etapa 5/6 - Tabela resumo do fastp: iniciada"
+cat > "$AUX/fastp_summary.py" <<'PY'
+#!/usr/bin/env python3
+"""Consolida os JSON do fastp em uma tabela TSV.
+
+Uso: fastp_summary.py <dir_json> <saida.tsv>
+"""
+import csv, glob, json, os, sys
+
+json_dir, out = sys.argv[1], sys.argv[2]
+
+rows = []
+for f in sorted(glob.glob(os.path.join(json_dir, "*.fastp.json"))):
+    with open(f) as fh:
+        d = json.load(fh)
+    b = d["summary"]["before_filtering"]
+    a = d["summary"]["after_filtering"]
+    rows.append({
+        "amostra":         os.path.basename(f).replace(".fastp.json", ""),
+        "reads_brutas":    b["total_reads"],
+        "reads_filtradas": a["total_reads"],
+        "pct_retidas":     round(100 * a["total_reads"] / b["total_reads"], 2) if b["total_reads"] else 0.0,
+        "q30_antes_pct":   round(100 * b["q30_rate"], 2),
+        "q30_depois_pct":  round(100 * a["q30_rate"], 2),
+        "gc_pct":          round(100 * a["gc_content"], 2),
+        "len_media_r1":    a.get("read1_mean_length", "NA"),
+        "duplicacao_pct":  round(100 * d.get("duplication", {}).get("rate", 0), 2),
+    })
+
+if not rows:
+    sys.exit(f"ERRO: nenhum *.fastp.json encontrado em {json_dir}")
+
+os.makedirs(os.path.dirname(out), exist_ok=True)
+with open(out, "w", newline="") as fh:
+    w = csv.DictWriter(fh, fieldnames=list(rows[0]), delimiter="\t", lineterminator="\n")
+    w.writeheader()
+    w.writerows(rows)
+print(f"{len(rows)} amostras escritas em {out}")
+PY
+sing_py "$AUX/fastp_summary.py" "$FP" "$TAB/fastp_summary.tsv"
+msg "Etapa 5/6 - Tabela resumo do fastp: concluida"
+
+# --- 6) Figuras --------------------------------------------------------------
+msg "Etapa 6/6 - Figuras: iniciada"
+cat > "$AUX/fastp_figuras.py" <<'PY'
+#!/usr/bin/env python3
+"""Figuras a partir da tabela resumo do fastp.
+
+Uso: fastp_figuras.py <fastp_summary.tsv> <dir_figuras>
+"""
+import csv, os, sys
+
+import matplotlib
+matplotlib.use("Agg")          # backend sem display, obrigatorio em no de calculo
+import matplotlib.pyplot as plt
+
+tsv, figdir = sys.argv[1], sys.argv[2]
+os.makedirs(figdir, exist_ok=True)
+
+with open(tsv) as fh:
+    d = list(csv.DictReader(fh, delimiter="\t"))
+if not d:
+    sys.exit(f"ERRO: tabela vazia: {tsv}")
+
+d.sort(key=lambda r: float(r["reads_filtradas"]))
+amostras  = [r["amostra"] for r in d]
+brutas    = [float(r["reads_brutas"]) / 1e6 for r in d]
+filtradas = [float(r["reads_filtradas"]) / 1e6 for r in d]
+q30_antes  = [float(r["q30_antes_pct"]) for r in d]
+q30_depois = [float(r["q30_depois_pct"]) for r in d]
+
+def limpa(ax):
+    for lado in ("top", "right"):
+        ax.spines[lado].set_visible(False)
+
+# 1. Reads antes x depois da filtragem
+y, h = range(len(amostras)), 0.38
+fig, ax = plt.subplots(figsize=(7, max(3.0, 0.45 * len(amostras) + 1.5)))
+ax.barh([i + h / 2 for i in y], brutas,    height=h, color="#a6a6a6", label="Bruto")
+ax.barh([i - h / 2 for i in y], filtradas, height=h, color="#2c7fb8", label="Filtrado")
+ax.set_yticks(list(y))
+ax.set_yticklabels(amostras)
+ax.set_xlabel("Milhoes de reads")
+ax.set_title("Reads por amostra, antes e depois do fastp")
+ax.legend(frameon=False, loc="lower right")
+ax.grid(axis="x", alpha=0.3)
+ax.set_axisbelow(True)
+limpa(ax)
+fig.tight_layout()
+fig.savefig(os.path.join(figdir, "reads_por_amostra.png"), dpi=300)
+plt.close(fig)
+
+# 2. Ganho de qualidade (Q30)
+lo = min(q30_antes + q30_depois) - 1
+hi = max(q30_antes + q30_depois) + 1
+fig, ax = plt.subplots(figsize=(6, 5))
+ax.plot([lo, hi], [lo, hi], ls="--", color="#999999", lw=1)   # linha y = x
+ax.scatter(q30_antes, q30_depois, s=45, color="#e6550d", zorder=3)
+for nome, x, yv in zip(amostras, q30_antes, q30_depois):
+    ax.annotate(nome, (x, yv), textcoords="offset points", xytext=(6, 4), fontsize=8)
+ax.set_xlim(lo, hi)
+ax.set_ylim(lo, hi)
+ax.set_xlabel("% bases Q30 (bruto)")
+ax.set_ylabel("% bases Q30 (filtrado)")
+ax.set_title("Efeito da filtragem sobre a qualidade")
+ax.grid(alpha=0.3)
+ax.set_axisbelow(True)
+limpa(ax)
+fig.tight_layout()
+fig.savefig(os.path.join(figdir, "q30_antes_depois.png"), dpi=300)
+plt.close(fig)
+
+print(f"Figuras salvas em {figdir}")
+PY
+sing_py "$AUX/fastp_figuras.py" "$TAB/fastp_summary.tsv" "$FIG"
+msg "Etapa 6/6 - Figuras: concluida"
+
+msg "Job finalizado | resultados em: $DIR"
 ```
 
 ```bash
-sbatch scripts/qc_slurm.sh
-squeue -u $USER
-tail -f logs/qc_<JOBID>.out
+srun --partition=gui --cpus-per-task=8 --mem=8G -o slurm_containers.out -e slurm_containers.err atividades/scripts/qc_module_II_slurm_v0.2.sh \
+  atividades/sifs/02b_qc_apps.sif "<project_name>" "atividades/qc_results" "<path/to/reads>" 
 ```
 
 > 💡 **Dica — bind mounts**
@@ -473,81 +645,8 @@ tail -f logs/qc_<JOBID>.out
 > 💡 **Dica — usando o container de apps**
 > Com o `02b_qc_apps.sif`, troque `singularity exec "$SIF" fastp ...` por `singularity run --app fastp "$SIF" ...`.
 
-### 5.2 `scripts/parse_fastp.py` — métricas em tabela
 
-```python
-#!/usr/bin/env python3
-"""Consolida os JSON do fastp em uma tabela TSV."""
-import csv, glob, json, os
-
-rows = []
-for f in sorted(glob.glob("results/qc/fastp/*.fastp.json")):
-    d = json.load(open(f))
-    b = d["summary"]["before_filtering"]
-    a = d["summary"]["after_filtering"]
-    rows.append({
-        "amostra":         os.path.basename(f).replace(".fastp.json", ""),
-        "reads_brutas":    b["total_reads"],
-        "reads_filtradas": a["total_reads"],
-        "pct_retidas":     round(100 * a["total_reads"] / b["total_reads"], 2),
-        "q30_antes_pct":   round(100 * b["q30_rate"], 2),
-        "q30_depois_pct":  round(100 * a["q30_rate"], 2),
-        "gc_pct":          round(100 * a["gc_content"], 2),
-        "len_media_r1":    a["read1_mean_length"],
-        "duplicacao_pct":  round(100 * d["duplication"]["rate"], 2),
-    })
-
-out = "results/qc/tables/fastp_summary.tsv"
-with open(out, "w", newline="") as fh:
-    w = csv.DictWriter(fh, fieldnames=rows[0].keys(), delimiter="\t")
-    w.writeheader()
-    w.writerows(rows)
-print(f"{len(rows)} amostras escritas em {out}")
-```
-
-### 5.3 `scripts/plot_qc.R` — gráficos
-
-```r
-library(tidyverse)
-
-d <- read_tsv("results/qc/tables/fastp_summary.tsv", show_col_types = FALSE)
-
-# 1. Reads antes x depois da filtragem
-p1 <- d |>
-  select(amostra, reads_brutas, reads_filtradas) |>
-  pivot_longer(-amostra, names_to = "etapa", values_to = "reads") |>
-  mutate(etapa = factor(etapa,
-                        levels = c("reads_brutas", "reads_filtradas"),
-                        labels = c("Bruto", "Filtrado"))) |>
-  ggplot(aes(fct_reorder(amostra, reads), reads / 1e6, fill = etapa)) +
-  geom_col(position = position_dodge(0.8), width = 0.7) +
-  coord_flip() +
-  scale_fill_manual(values = c("grey65", "#2c7fb8")) +
-  labs(x = NULL, y = "Milhões de reads", fill = NULL,
-       title = "Reads por amostra, antes e depois do fastp") +
-  theme_bw(base_size = 12)
-
-# 2. Ganho de qualidade (Q30)
-p2 <- d |>
-  ggplot(aes(q30_antes_pct, q30_depois_pct, label = amostra)) +
-  geom_abline(linetype = 2, colour = "grey60") +
-  geom_point(size = 3, colour = "#e6550d") +
-  ggrepel::geom_text_repel(size = 3) +
-  labs(x = "% bases Q30 (bruto)", y = "% bases Q30 (filtrado)",
-       title = "Efeito da filtragem sobre a qualidade") +
-  theme_bw(base_size = 12)
-
-dir.create("results/qc/figures", showWarnings = FALSE, recursive = TRUE)
-ggsave("results/qc/figures/reads_por_amostra.png", p1, width = 7, height = 4.5, dpi = 300)
-ggsave("results/qc/figures/q30_antes_depois.png",  p2, width = 6, height = 5,   dpi = 300)
-```
-
-> 💡 **Dica — R dentro do container**
-> Adicione `r-base=4.4`, `r-tidyverse` e `r-ggrepel` ao `env/qc.yml` (ou crie um app `plot` no container de apps) e rode:
-> `singularity exec containers/02a_qc.sif Rscript scripts/plot_qc.R`.
-> Assim tabela e figura nascem do **mesmo container** que gerou os dados — reprodutibilidade de ponta a ponta.
-
-### 5.4 Versionamento
+### 5.2 Versionamento
 
 ```bash
 cat >> .gitignore <<'EOF'
