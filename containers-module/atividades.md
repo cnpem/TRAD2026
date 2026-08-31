@@ -24,9 +24,9 @@ Ao final da aula o aluno será capaz de:
 |---|---|
 | 08:00 – 08:20 | Ambientação: checagem do ambiente, cache, `--fakeroot` |
 | 08:20 – 09:00 | **Tarefa 1** — Container do zero |
-| 09:00 – 09:50 | **Tarefa 2** — Containers com Conda (mono e multi-ambiente) |
-| 09:50 – 10:05 | Intervalo |
-| 10:05 – 10:35 | **Tarefa 3** — Seqera Containers |
+| 09:00 – 10:00 | **Tarefa 2** — Containers com Conda (mono e multi-ambiente) |
+| 10:00 – 10:15 | Intervalo |
+| 10:15 – 10:35 | **Tarefa 3** — Seqera Containers |
 | 10:35 – 11:05 | **Tarefa 4** — Desafio: conserte o `.def` |
 | 11:05 – 11:50 | **Tarefa 5** — Job SLURM de QC + tabelas e gráficos |
 | 11:50 – 12:00 | Fechamento, entrega e discussão |
