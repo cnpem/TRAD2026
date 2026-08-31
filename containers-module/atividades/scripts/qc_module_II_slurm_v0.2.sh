@@ -9,6 +9,7 @@
 #
 #  A tabela resumo e as figuras sao geradas pelo python do proprio container
 #  (o env do MultiQC ja traz matplotlib), sem dependencia externa.
+#
 # =============================================================================
 
 set -Eeuo pipefail
