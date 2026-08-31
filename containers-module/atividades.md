@@ -169,12 +169,12 @@ From: ubuntu:22.04
 ### 1.2 Construa e teste
 
 ```bash
-singularity build --fakeroot containers/01_seqkit.sif defs/01_seqkit.def
+singularity build --fakeroot atividades/sifs/01_seqkit.sif atividades/defs/01_seqkit.def
 
-singularity run   containers/01_seqkit.sif version
-singularity exec  containers/01_seqkit.sif seqkit stats data/raw/*.fastq.gz
-singularity shell containers/01_seqkit.sif          # explore por dentro
-singularity inspect --helpfile containers/01_seqkit.sif
+singularity run   atividades/sifs/01_seqkit.sif version
+singularity exec  atividades/sifs/01_seqkit.sif seqkit stats <path/to/raw/data>*.fastq.gz
+singularity shell atividades/sifs/01_seqkit.sif          # explore por dentro
+singularity inspect --helpfile atividades/sifs/01_seqkit.sif
 ```
 
 > 💡 **Dica — `%post` ≠ `%environment`**
@@ -237,8 +237,8 @@ From: condaforge/miniforge3:24.7.1-0
 ```
 
 ```bash
-singularity build --fakeroot containers/02a_qc.sif defs/02a_qc_env_unico.def
-singularity exec containers/02a_qc.sif fastp --version
+singularity build --fakeroot atividades/sifs/02a_qc.sif atividades/defs/02a_qc_env_unico.def
+singularity exec atividades/sifs/02a_qc.sif fastp --version
 ```
 
 > 💡 **Dica — `conda activate` no `%post`**
@@ -286,9 +286,9 @@ From: condaforge/miniforge3:24.7.1-0
 ```
 
 ```bash
-singularity build --fakeroot containers/02b_qc_apps.sif defs/02b_qc_apps.def
-singularity run --app fastp containers/02b_qc_apps.sif --version
-singularity inspect --app multiqc --helpfile containers/02b_qc_apps.sif
+singularity build --fakeroot atividades/sifs/02b_qc_apps.sif atividades/defs/02b_qc_apps.def
+singularity run --app fastp atividades/sifs/02b_qc_apps.sif --version
+singularity inspect --app multiqc --helpfile atividades/sifs/02b_qc_apps.sif
 ```
 
 > 💡 **Dica — quando separar os ambientes?**
@@ -653,13 +653,14 @@ cat >> .gitignore <<'EOF'
 data/raw/
 *.fastq.gz
 *.sif
+sifs/
 results/qc/fastp/*.trim.fastq.gz
 EOF
 
-git add defs/ env/ scripts/ .gitignore \
-        results/qc/tables/ results/qc/figures/ \
-        results/qc/multiqc/multiqc_report.html
-git commit -m "QC RNA-seq S. cerevisiae: pipeline em container + tabelas e figuras"
+git add atividades/defs/ atividades/scripts/ .gitignore \
+        atividades/qc_results/tables/ atividades/qc_results/figures/ \
+        atividades/qc_results/multiqc/multiqc_report.html
+git commit -m "Resultados do <Nome-do-projeto> : pipeline em container + tabelas e figuras"
 git push
 ```
 
