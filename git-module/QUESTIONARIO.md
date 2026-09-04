@@ -1,6 +1,6 @@
 # Questionário de controle de qualidade
 
-Dataset analisado:
+Dataset analisado: 16_Waterwaste
 
 1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
