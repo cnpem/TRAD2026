@@ -4,11 +4,13 @@ Dataset analisado:
 
 1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
-R:
+R: Scripts, arquivos de configuração, metadados não sensíveis e relatórios de qualidade devem ser versionados, pois documentam e permitem reproduzir a análise. Já os arquivos FASTQ e os resultados intermediários não devem ser versionados, porque geralmente são grandes e podem ser obtidos ou gerados novamente. 
+
+
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
-R: 
+R:
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
@@ -21,3 +23,4 @@ R:
 5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
 R:
+
