@@ -12,7 +12,7 @@ R:
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
-R:
+R: Não, muitos fatores podem influenciar a reprodutibilidade da análise para além da disponibilização do código. Dentre elas podemos citar as versões de software, ambiente utilizado, versão dos dados de entrada, além de parâmetros de amostragem e/ou estocásticos. 
 
 4. Considere que uma queda de qualidade foi identificada nas regiões finais das leituras. Você modifica os parâmetros de *trimming* e executa novamente a análise. Descreva como essa mudança deveria ser registrada no Git para que seja possível comparar o resultado anterior com o novo resultado e posteriormente recuperar qualquer uma das duas versões da análise.
 
