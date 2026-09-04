@@ -1,6 +1,6 @@
 # Questionário de controle de qualidade
 
-Dataset analisado:
+Dataset analisado: 16S_Hydrochoerus_hydrochaeris
 
 1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
@@ -8,7 +8,7 @@ R: Os arquivos que devem ser versionados são: scripts, metadados e arquivos de 
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
-R:
+R: Precisamos ter ao menos a origem dos dados de entrada utilizados para o resultado provido, descrição dos software necessários para a execução com suas respectivas versões, parametros alterados nos software e versão do repositório no qual a análise foi executada.
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
