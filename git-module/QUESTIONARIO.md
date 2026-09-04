@@ -12,7 +12,9 @@ R: Quais dados foram utilizados como entrada; a versão do software, e os parâm
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
-R:
+R:Baseando inteiramente na interpretacao do Copilot
+
+Não. Disponibilizar os scripts no GitHub é necessário, mas não suficiente para garantir reprodutibilidade. No caso do pipeline mostrado no TRAD2026 - Euterpe\_oleracea\_ MultiQC Report, também seriam necessários pelo menos: (i) os dados de entrada ou acesso a eles (amostras SRR33581420–SRR33581424), (ii) versões exatas dos softwares e parâmetros utilizados (MultiQC, NanoStat, NanoPlot etc.) e (iii) um registro detalhado do ambiente computacional e da ordem de execução do workflow.
 
 4. Considere que uma queda de qualidade foi identificada nas regiões finais das leituras. Você modifica os parâmetros de *trimming* e executa novamente a análise. Descreva como essa mudança deveria ser registrada no Git para que seja possível comparar o resultado anterior com o novo resultado e posteriormente recuperar qualquer uma das duas versões da análise.
 
