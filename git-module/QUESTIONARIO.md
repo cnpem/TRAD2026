@@ -6,8 +6,6 @@ Dataset analisado:
 
 R: Scripts, arquivos de configuração, metadados não sensíveis e relatórios de qualidade devem ser versionados, pois documentam e permitem reproduzir a análise. Já os arquivos FASTQ e os resultados intermediários não devem ser versionados, porque geralmente são grandes e podem ser obtidos ou gerados novamente. 
 
-
-
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
 R:Seriam necessários os arquivos brutos, os parâmetros utilizados para tratar esses dados. Também seria fundamental saber a versão do R, Python e ferramentas dos scrtips. 
@@ -23,4 +21,3 @@ R: Registrar a alteração como um novo commit, sem sobrescrever a anterior, des
 5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
 R: Poderia ser verificado se houve aumento de transcritos identificados e se a quantificação do RNA-Seq faz sentido com o tipo de tecido analisado. Sempre comparando com os resultados anteriores. Seriam comparadas as métricas de coverage, qualidade mínima da leitura e outros filtros que removem reads. Essa infos poderiam ser documentadas tanto nas mensagens de commit, como "alteração parametros pre-processamento", como nos próprios códigos.
-
