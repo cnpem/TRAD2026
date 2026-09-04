@@ -20,5 +20,4 @@ R: faz um brunch registra, faz commit, envia um pull request com uma modificaç�
 
 5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
-R:
-
+R: Eu decidiria se a modificação foi benéfica a depender de qual fração do número total de reads que foi perdido, e se isso é o suficiente para mudar a interpretabilidade dos dados. Caso sim, eu verificaria em que contexto essa mudança estaria e se algum viés novo estava sendo inserido. Eu avaliaria o número de reads, número de duplicações, e qualidade total.
