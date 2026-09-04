@@ -8,7 +8,7 @@ R: Os arquivos que devem ser versionados são FASTQ, scripts, e arquivos de conf
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
-R: 
+R:
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
@@ -20,4 +20,5 @@ R:
 
 5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
-R:
+R: Após esse novo processamento hipotético, as modificações nos dados poderão ser avaliadas comparando os resultados da análise do controle de qualidade pré e pós processamento. Nesse sentido, seria observado principalmente o gráfico de Reads By Quality gerado pelo software NanoStat, onde deve haver um aumento da porcentagem de reads com qualidade maior que 25. Essa decisão seria documentada no repositório usando um arquivo .md ou .txt contendo os parâmetros usados para o processamento, e também os critérios que levaram o usuário a tomar as decisões para o processamento dos dados.
+
