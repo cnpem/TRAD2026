@@ -1,6 +1,6 @@
 # Questionário de controle de qualidade
 
-Dataset analisado:
+Dataset analisado: RNA-Seq Acai
 
 1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
@@ -8,7 +8,7 @@ R:
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
-R: 
+R: Quais dados foram utilizados como entrada; a versão do software, e os parâmetros utilizados para o trimming.  
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
