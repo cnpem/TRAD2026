@@ -12,7 +12,7 @@ R:
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
-R:
+R: Não, pois ainda é necessário o arquivo README que descreve como os scripts do projeto funcionam. É preciso ter as informações sobre as versões das ferramentas utilizadas. Acesso ao repositório.
 
 4. Considere que uma queda de qualidade foi identificada nas regiões finais das leituras. Você modifica os parâmetros de *trimming* e executa novamente a análise. Descreva como essa mudança deveria ser registrada no Git para que seja possível comparar o resultado anterior com o novo resultado e posteriormente recuperar qualquer uma das duas versões da análise.
 
