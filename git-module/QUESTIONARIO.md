@@ -8,7 +8,7 @@ R: Os arquivos que devem ser versionados são FASTQ, scripts, e arquivos de conf
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
-R:
+R: Quais dados foram utilizados como entrada; a versão do software, e os parâmetros utilizados para o trimming.  
 
 3. Um colega afirma que sua análise é reprodutível porque todos os scripts estão disponíveis no GitHub. Essa afirmação é suficiente? Avalie criticamente e indique pelo menos três elementos adicionais necessários para que outra pessoa possa reproduzir o processamento do dataset.
 
