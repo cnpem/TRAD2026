@@ -1,6 +1,6 @@
 # Questionário de controle de qualidade
 
-Dataset analisado:RNA-Seq Acai
+Dataset analisado: RNA-Seq Acai
 
 
 
