@@ -16,8 +16,8 @@ R:
 
 4. Considere que uma queda de qualidade foi identificada nas regiões finais das leituras. Você modifica os parâmetros de *trimming* e executa novamente a análise. Descreva como essa mudança deveria ser registrada no Git para que seja possível comparar o resultado anterior com o novo resultado e posteriormente recuperar qualquer uma das duas versões da análise.
 
-R:
+R: Eu modificaria os parametros utilizados pela ferramenta e, no comitt, colocaria um titulo descritivo sobre o que foi modificado no commit. 
 
 5. Após o novo processamento, algumas métricas de qualidade melhoraram, mas o número total de leituras diminuiu. Como você decidiria se a modificação foi realmente benéfica? Quais métricas compararia e como documentaria essa decisão no repositório?
 
-R:
+R: Depende dos parametros, pois se a porcentagem de perda de reads for muito alta em relacao ao aumento da qualidade, perderia muita informacao sobre a amostra. 
