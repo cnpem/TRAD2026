@@ -667,15 +667,28 @@ srun --partition=gui --cpus-per-task=8 --mem=8G -o slurm_containers.out -e slurm
 ```bash
 cat >> .gitignore <<'EOF'
 data/raw/
-*.fastq.gz
-*.sif
+atividades/
+old/
 sifs/
-results/qc/fastp/*.trim.fastq.gz
+00_scripts/
+01_fastqc_raw/
+02_fastp/
+03_fastqc_trimmed/
+04_multiqc/
+*.fastq.gz
+*.fastq
+*.html
+*.fastqc.zip
+*.json
+*.sif
+
+# Ignora arquivos com resultados de análises e logs
+
+qc_results/
 EOF
 
 git add atividades/defs/ atividades/scripts/ .gitignore \
-        atividades/qc_results/tables/ atividades/qc_results/figures/ \
-        atividades/qc_results/multiqc/multiqc_report.html
+        atividades/qc_results/
 git commit -m "Resultados do <Nome-do-projeto> : pipeline em container + tabelas e figuras"
 git push
 ```
