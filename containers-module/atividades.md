@@ -194,7 +194,7 @@ Duas estratégias para as mesmas três ferramentas: `fastqc`, `fastp` e `multiqc
 
 ### 2A — Ambiente único
 
-`env/qc.yml`:
+`defs/qc.yml`:
 
 ```yaml
 name: qc
