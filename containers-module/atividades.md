@@ -670,21 +670,20 @@ data/raw/
 atividades/
 old/
 sifs/
-00_scripts/
-01_fastqc_raw/
-02_fastp/
-03_fastqc_trimmed/
-04_multiqc/
+qc_results/00_scripts/
+qc_results/01_fastqc_raw/
+qc_results/02_fastp/
+qc_results/03_fastqc_trimmed/
+qc_results/04_multiqc/
 *.fastq.gz
 *.fastq
 *.html
 *.fastqc.zip
 *.json
 *.sif
+*.log
+*.err
 
-# Ignora arquivos com resultados de análises e logs
-
-qc_results/
 EOF
 
 git add atividades/defs/ atividades/scripts/ .gitignore \
