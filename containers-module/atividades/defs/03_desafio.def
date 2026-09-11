@@ -1,13 +1,19 @@
-Bootstrap docker
+Bootstrap: docker
 From: ubuntu:22.04
 
-%post
-    apt-get install wget
-    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
-    conda activate base
-    mamba install -y -c bioconda fastp multiqc
+%environment
     export PATH="/opt/conda/bin:$PATH"
 
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt-get install -y --no-install-recommends wget ca-certificates procps
+    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
+    export PATH="/opt/conda/bin:$PATH"
+    . /opt/conda/etc/profile.d/conda.sh
+    conda activate base
+    mamba install -y -c bioconda fastp multiqc fastqc
+
 %runscript
-    fastqc "$@"
+    exec fastqc "$@"
