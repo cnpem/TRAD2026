@@ -8,7 +8,7 @@
 #  A saida das ferramentas vai para <dir_saida>/<projeto>/<projeto>_<data>.log
 #
 #  A tabela resumo e as figuras sao geradas pelo python do proprio container
-#  (o env do MultiQC ja traz matplotlib), sem dependencia externa.
+#  (o env pyplot ja traz matplotlib), sem dependencia externa.
 #
 # =============================================================================
 
@@ -24,7 +24,7 @@ RAW="$(readlink -f "${4:-$PWD}")"
 EXT="fastq.gz"
 THREADS="${SLURM_CPUS_PER_TASK:-$(nproc)}"
 BASE_PATH="/opt/conda/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-PYTHON_BIN="/opt/conda/envs/multiqc/bin/python"   # python do container (traz matplotlib)
+PYTHON_BIN="/opt/conda/envs/pyplot/bin/python"   # python do container (traz matplotlib)
 
 [[ -f "$SIF" ]] || { echo "ERRO: container inexistente: $SIF" >&2; exit 1; }
 [[ -d "$RAW" ]] || { echo "ERRO: diretorio de reads inexistente: $RAW" >&2; exit 1; }
