@@ -1,13 +1,24 @@
-Bootstrap docker
-From: ubuntu:22.04
+Bootstrap: docker
+From: condaforge/miniforge3:24.7.1-0
+
+%labels
+    Author  ana.loponi@lnbr.cnpem.br
+    Version 0.1.0
+    Tool    fastqc 0.12.1, fastp 0.23.4, multiqc 1.35
 
 %post
-    apt-get install wget
-    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
-    bash Miniforge3-Linux-x86_64.sh -b -p /opt/conda
-    conda activate base
-    mamba install -y -c bioconda fastp multiqc
-    export PATH="/opt/conda/bin:$PATH"
+    . /opt/conda/etc/profile.d/conda.sh
+    mamba create -y -n fastqc  -c conda-forge -c bioconda fastqc=0.12.1
+    mamba create -y -n fastp   -c conda-forge -c bioconda fastp=0.23.4
+    mamba create -y -n multiqc -c conda-forge -c bioconda multiqc=1.22.3
+    conda clean -afy
+
+%environment
+    export LC_ALL=C
+    export PATH="/opt/conda/envs/fastqc/bin:/opt/conda/envs/fastp/bin:/opt/conda/envs/multiqc/bin:$PATH"
 
 %runscript
-    fastqc "$@"
+    exec "$@"
+
+%test
+    fastqc --version && fastp --version && multiqc --version
