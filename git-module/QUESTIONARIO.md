@@ -1,10 +1,10 @@
 # Questionário de controle de qualidade
 
-Dataset analisado:
+Dataset analisado: RNA-Seq Acai
 
 1. Quais arquivos deste exercício devem ser versionados pelo Git e quais não devem? Considere FASTQ, relatórios de qualidade, scripts, arquivos de configuração, metadados e resultados intermediários. Justifique.
 
-R:
+R: Os arquivos que devem ser versionados são FASTQ, scripts, e arquivos de configuração pois eles ajudam na reprodução do resultado, os relatórios de qualidade também, já que dependendo da análise o tempo de processamento é longo. No entanto, metadados e resultados intermediários não devem ser versionados.
 
 2. Você recebe apenas os arquivos de resultados de uma análise e o endereço do repositório Git correspondente. Quais informações adicionais seriam necessárias para reproduzir completamente a análise? Considere dados de entrada, versões de software, parâmetros, ambiente computacional e versão do código.
 
