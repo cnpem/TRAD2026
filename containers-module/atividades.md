@@ -194,7 +194,7 @@ Duas estratégias para as mesmas três ferramentas: `fastqc`, `fastp` e `multiqc
 
 ### 2A — Ambiente único
 
-`env/qc.yml`:
+`defs/qc.yml`:
 
 ```yaml
 name: qc
@@ -257,13 +257,14 @@ From: condaforge/miniforge3:24.7.1-0
 
 %labels
     Author  seu.nome@instituicao.br
-    Version 1.0.0
+    Version 1.0.2
 
 %post
     . /opt/conda/etc/profile.d/conda.sh
     mamba create -y -n fastqc  -c conda-forge -c bioconda fastqc=0.12.1
     mamba create -y -n fastp   -c conda-forge -c bioconda fastp=0.23.4
     mamba create -y -n multiqc -c conda-forge -c bioconda multiqc=1.22.3
+    mamba create -y -n pyplot -c conda-forge python=3.11 matplotlib-base=3.9.2 seaborn=0.13.2 pandas=2.2.2 numpy=1.26.4
     conda clean -afy
 
 %environment
@@ -283,6 +284,21 @@ From: condaforge/miniforge3:24.7.1-0
     exec /opt/conda/envs/multiqc/bin/multiqc "$@"
 %apphelp multiqc
     MultiQC 1.22.3 — singularity run --app multiqc <img.sif> -o out/ results/
+
+%appenv pyplot
+    export PATH=/opt/conda/envs/pyplot/bin:$PATH
+    export MPLBACKEND=Agg
+    export MPLCONFIGDIR=${MPLCONFIGDIR:~/tmp/mlpconfig=${id -u}}
+
+%apprun pyplot
+    mkdir -p ${MPLCONFIGDIR}
+    exec /opt/conda/envs/pyplot/bin/python "$@"
+
+%apphelp pyplot
+    Python 3.11 + matplotlib/seaborn/pandas —
+      singularity run --app pyplot <img.sif> plot_qc.py results/ -o figs/
+      singularity exec --app pyplot <img.sif> python -c "import seaborn; print(seaborn.__version__)"
+
 ```
 
 ```bash
@@ -432,7 +448,7 @@ RAW="$(readlink -f "${4:-$PWD}")"
 EXT="fastq.gz"
 THREADS="${SLURM_CPUS_PER_TASK:-$(nproc)}"
 BASE_PATH="/opt/conda/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-PYTHON_BIN="/opt/conda/envs/multiqc/bin/python"   # python do container (traz matplotlib)
+PYTHON_BIN="/opt/conda/envs/pyplot/bin/python"   # python do container (traz matplotlib) 
 
 [[ -f "$SIF" ]] || { echo "ERRO: container inexistente: $SIF" >&2; exit 1; }
 [[ -d "$RAW" ]] || { echo "ERRO: diretorio de reads inexistente: $RAW" >&2; exit 1; }
@@ -651,15 +667,27 @@ srun --partition=gui --cpus-per-task=8 --mem=8G -o slurm_containers.out -e slurm
 ```bash
 cat >> .gitignore <<'EOF'
 data/raw/
-*.fastq.gz
-*.sif
+atividades/
+old/
 sifs/
-results/qc/fastp/*.trim.fastq.gz
+qc_results/00_scripts/
+qc_results/01_fastqc_raw/
+qc_results/02_fastp/
+qc_results/03_fastqc_trimmed/
+qc_results/04_multiqc/
+*.fastq.gz
+*.fastq
+*.html
+*.fastqc.zip
+*.json
+*.sif
+*.log
+*.err
+
 EOF
 
 git add atividades/defs/ atividades/scripts/ .gitignore \
-        atividades/qc_results/tables/ atividades/qc_results/figures/ \
-        atividades/qc_results/multiqc/multiqc_report.html
+        atividades/qc_results/
 git commit -m "Resultados do <Nome-do-projeto> : pipeline em container + tabelas e figuras"
 git push
 ```
