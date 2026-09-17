@@ -10,3 +10,12 @@ sifs/
 results/
 *.out
 *.err
+
+data/raw/
+01_fastqc_raw/
+02_fastp/
+03_fastqc_trimmed/
+04_multiqc/
+*fastqc.zip
+*.json
+*.log
